@@ -1,4 +1,5 @@
 #![feature(start)]
+
 #[macro_use]
 extern crate macros;
 
