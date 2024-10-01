@@ -4,12 +4,11 @@
 #[macro_use]
 extern crate macros;
 
-use std::{
-    error::Error,
-    ffi::{CStr, OsStr},
-    fs::{self, exists},
-    os::unix::{ffi::OsStrExt, fs::PermissionsExt},
-};
+#[cfg(feature = "start")]
+extern crate prelude;
+
+use prelude::*;
+use std::{fs::exists, os::unix::fs::PermissionsExt};
 
 const DEFAULT_MODE: u32 = 0o0777;
 const USAGE: &str = "usage: mkdir [-p] [-m mode] dir...";

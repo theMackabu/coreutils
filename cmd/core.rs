@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate macros;
+extern crate prelude;
 
 mod cat;
 mod cp;

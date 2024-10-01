@@ -4,12 +4,12 @@
 #[macro_use]
 extern crate macros;
 
+#[cfg(feature = "start")]
+extern crate prelude;
+
+use prelude::*;
 use std::{
-    error::Error,
-    ffi::{CStr, OsStr},
-    fs::{self, Metadata},
-    os::unix::{ffi::OsStrExt, fs::MetadataExt},
-    path::{Path, PathBuf},
+    os::unix::fs::MetadataExt,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 

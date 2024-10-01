@@ -4,18 +4,26 @@ name = "coreutils"
 [env]
 bin = "target/bin"
 lib = "target/lib"
+extern = "../../lib"
+
 rustc = "rustc +nightly"
-flags = "-L ./target/lib --extern macros -O -C codegen-units=1"
+flags = "-L ./target/lib --extern macros --extern prelude -O -C codegen-units=1"
 
 [tasks]
+test.script = ["maid build -q %{arg.1}", "./%{env.bin}/%{arg.1} %{arg.2}"]
+
 clean.script = [
     "rm %{env.bin}/%{arg.1}",
     "mkdir -p %{env.bin}",
     "mkdir -p %{env.lib}",
 ]
 
-test.script = ["maid build -q %{arg.1}", "./%{env.bin}/%{arg.1} %{arg.2}"]
-lib.script = "%{env.rustc} --crate-type=lib lib/macros.rs -o %{env.lib}/libmacros.rlib"
+[tasks.lib]
+path = "target/lib"
+script = [
+    "%{env.rustc} --crate-type=lib %{env.extern}/macros.rs",
+    "%{env.rustc} --crate-type=lib %{env.extern}/prelude.rs",
+]
 
 [tasks.build]
 depends = ["clean", "lib"]

@@ -4,13 +4,11 @@
 #[macro_use]
 extern crate macros;
 
-use std::{
-    error::Error,
-    ffi::{CStr, OsStr},
-    fs::{self, OpenOptions},
-    os::unix::ffi::OsStrExt,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
+#[cfg(feature = "start")]
+extern crate prelude;
+
+use prelude::*;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const USAGE: &str = "usage: touch [-c] [-t time] files...";
 

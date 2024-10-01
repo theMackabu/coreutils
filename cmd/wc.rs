@@ -4,14 +4,10 @@
 #[macro_use]
 extern crate macros;
 
-use std::{
-    error::Error,
-    ffi::{CStr, OsStr},
-    fs::File,
-    io::{self, BufReader, Read},
-    os::unix::ffi::OsStrExt,
-    path::PathBuf,
-};
+#[cfg(feature = "start")]
+extern crate prelude;
+
+use prelude::*;
 
 const USAGE: &str = "usage: wc [-clmw] [file ...]";
 

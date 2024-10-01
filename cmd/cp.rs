@@ -4,13 +4,10 @@
 #[macro_use]
 extern crate macros;
 
-use std::{
-    error::Error,
-    ffi::{CStr, OsStr},
-    fs, io,
-    os::unix::ffi::OsStrExt,
-    path::Path,
-};
+#[cfg(feature = "start")]
+extern crate prelude;
+
+use prelude::*;
 
 const USAGE: &str = "usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file";
 
