@@ -223,7 +223,7 @@ pub fn _start(argc: isize, argv: *const *const u8) -> isize {
                     b'r' => options.reverse = true,
                     b't' => options.sort_by_time = true,
                     _ => {
-                        eprintln!("ls: invalid option -- '{}'", byte as char);
+                        eprintln!("ls: invalid option '{}'", byte as char);
                         usage!();
                     }
                 }
