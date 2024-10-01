@@ -9,7 +9,7 @@ flags = "-L ./target/lib --extern macros  -O -C codegen-units=1"
 
 [tasks]
 clean.script = [
-    "rm -rf %{env.bin}",
+    "rm -rf %{env.bin}/%{arg.1}",
     "mkdir -p %{env.bin}",
     "mkdir -p %{env.lib}",
 ]
