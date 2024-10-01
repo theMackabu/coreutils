@@ -3,6 +3,7 @@
 #[cfg(feature = "start")]
 #[macro_use]
 extern crate macros;
+extern crate entry;
 
 #[cfg(feature = "start")]
 extern crate prelude;
@@ -214,8 +215,8 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[cfg_attr(feature = "start", start)]
-pub fn _start(argc: isize, argv: *const *const u8) -> isize {
+#[entry::gen(start)]
+fn entry() -> ! {
     let args = parse_args(argc, argv);
     let mut paths = Vec::new();
 
