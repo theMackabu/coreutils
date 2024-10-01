@@ -35,14 +35,14 @@ fn _start(argc: isize, argv: *const *const u8) -> isize {
     }
 
     match args[0] {
-        b"cat" => cat::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"cp" => cp::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"ls" => ls::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"mkdir" => mkdir::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"mv" => mv::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"rm" => rm::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"touch" => touch::_start(argc - 1, unsafe { argv.offset(1) }),
-        b"wc" => wc::_start(argc - 1, unsafe { argv.offset(1) }),
+        b"cat" => start!(cat, argc, argv),
+        b"cp" => start!(cp, argc, argv),
+        b"ls" => start!(ls, argc, argv),
+        b"mkdir" => start!(mkdir, argc, argv),
+        b"mv" => start!(mv, argc, argv),
+        b"rm" => start!(rm, argc, argv),
+        b"touch" => start!(touch, argc, argv),
+        b"wc" => start!(wc, argc, argv),
         _ => {
             eprintln!("core: '{}' is not a core command. See 'core --help'.", String::from_utf8_lossy(args[0]));
             1

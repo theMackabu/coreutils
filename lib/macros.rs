@@ -1,3 +1,11 @@
+#[cfg(not(feature = "start"))]
+#[macro_export]
+macro_rules! start {
+    ($ident:ident, $argc:expr, $argv:expr) => {
+        $ident::_start($argc - 1, unsafe { $argv.offset(1) })
+    };
+}
+
 #[macro_export]
 macro_rules! error {
     ($($arg:tt)*) => {{
