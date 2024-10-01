@@ -29,7 +29,7 @@ script = [
 
 [tasks.build]
 depends = ["clean", "lib"]
-script = "%{env.rustc} %{env.flags} cmd/%{arg.1}.rs --cfg 'feature=\"start\"' -o %{env.bin}/%{arg.1}"
+script = "%{env.rustc} %{env.flags} cmd/%{arg.1}.rs --cfg 'feature=\"bin\"' -o %{env.bin}/%{arg.1}"
 
 [tasks.core]
 depends = ["lib"]

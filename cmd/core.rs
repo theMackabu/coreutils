@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate macros;
+extern crate entry;
 extern crate prelude;
 
 mod cat;
@@ -25,10 +26,8 @@ Available commands:
     touch   change file timestamps
     wc      print newline, word, and byte counts for each file";
 
-#[start]
-fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let args = prelude::parse_args(argc, argv);
-
+#[entry::gen]
+fn entry() -> ! {
     if args.is_empty() {
         usage!();
     }

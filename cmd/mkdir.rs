@@ -3,6 +3,7 @@
 #[cfg(feature = "start")]
 #[macro_use]
 extern crate macros;
+extern crate entry;
 
 #[cfg(feature = "start")]
 extern crate prelude;
@@ -59,9 +60,8 @@ impl<'d> Dir<'d> {
     }
 }
 
-#[cfg_attr(feature = "start", start)]
-pub fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let mut args = parse_args(argc, argv).into_iter();
+#[entry::gen(bin)]
+fn entry() -> ! {
     let mut mode = DEFAULT_MODE;
     let mut recursive = false;
     let mut directories = Vec::new();

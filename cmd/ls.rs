@@ -1,11 +1,11 @@
-#![cfg_attr(feature = "start", feature(start))]
+#![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 extern crate prelude;
 
 use prelude::*;
@@ -215,9 +215,8 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[entry::gen(start)]
+#[entry::gen(bin)]
 fn entry() -> ! {
-    let args = parse_args(argc, argv);
     let mut paths = Vec::new();
 
     let mut options = LsOptions {

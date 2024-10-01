@@ -3,6 +3,7 @@
 #[cfg(feature = "start")]
 #[macro_use]
 extern crate macros;
+extern crate entry;
 
 #[cfg(feature = "start")]
 extern crate prelude;
@@ -44,9 +45,8 @@ impl<'f> File<'f> {
     }
 }
 
-#[cfg_attr(feature = "start", start)]
-pub fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let mut args = parse_args(argc, argv).into_iter();
+#[entry::gen(bin)]
+fn entry() -> ! {
     let mut no_create = false;
     let mut time = SystemTime::now();
     let mut files = Vec::new();
