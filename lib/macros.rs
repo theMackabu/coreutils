@@ -29,3 +29,18 @@ macro_rules! usage {
         std::process::exit($code)
     }};
 }
+
+#[macro_export]
+macro_rules! argument {
+    ($args:expr, $options:expr, $files:expr, $match:expr, $else:expr) => {
+        for arg in $args {
+            if arg.starts_with(b"-") && arg.len() > 1 {
+                for &byte in &arg[1..] {
+                    $match(byte);
+                }
+            } else {
+                $else(arg);
+            }
+        }
+    };
+}

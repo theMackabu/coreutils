@@ -227,25 +227,23 @@ pub fn _start(argc: isize, argv: *const *const u8) -> isize {
         sort_by_time: false,
     };
 
-    for arg in args {
-        if arg.starts_with(b"-") && arg.len() > 1 {
-            for &byte in &arg[1..] {
-                match byte {
-                    b'a' => options.all = true,
-                    b'l' => options.long = true,
-                    b'h' => options.human_readable = true,
-                    b'r' => options.reverse = true,
-                    b't' => options.sort_by_time = true,
-                    _ => {
-                        eprintln!("ls: invalid option '{}'", byte as char);
-                        usage!();
-                    }
-                }
+    argument!(
+        args,
+        options,
+        files,
+        |byte| match byte {
+            b'a' => options.all = true,
+            b'l' => options.long = true,
+            b'h' => options.human_readable = true,
+            b'r' => options.reverse = true,
+            b't' => options.sort_by_time = true,
+            _ => {
+                eprintln!("ls: invalid option '{}'", byte as char);
+                usage!();
             }
-        } else {
-            paths.push(PathBuf::from(OsStr::from_bytes(arg)));
-        }
-    }
+        },
+        |arg| paths.push(PathBuf::from(OsStr::from_bytes(arg)))
+    );
 
     if paths.is_empty() {
         paths.push(PathBuf::from("."));
