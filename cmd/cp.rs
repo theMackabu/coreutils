@@ -80,7 +80,7 @@ fn cp(source: &Path, destination: &Path, options: &CpOptions) -> Result<(), Box<
 }
 
 #[start]
-fn main(argc: isize, argv: *const *const u8) -> isize {
+fn _start(argc: isize, argv: *const *const u8) -> isize {
     let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() });
     let mut options = CpOptions::new();
     let mut sources = Vec::new();

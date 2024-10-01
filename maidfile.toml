@@ -14,7 +14,7 @@ clean.script = [
     "mkdir -p %{env.lib}",
 ]
 
-test.script = "./%{env.bin}/%{arg.1} %{arg.2}"
+test.script = ["maid build -q %{arg.1}", "./%{env.bin}/%{arg.1} %{arg.2}"]
 lib.script = "%{env.rustc} --crate-type=lib lib/macros.rs -o %{env.lib}/libmacros.rlib"
 
 [tasks.build]
