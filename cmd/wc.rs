@@ -71,7 +71,7 @@ fn print_result(result: &CountResult, options: &WcOptions, file_name: Option<&st
     let mut output = String::new();
 
     if options.count_lines {
-        output.push_str(&format!("{:7} ", result.lines));
+        output.push_str(&format!(" {:7} ", result.lines));
     }
     if options.count_words {
         output.push_str(&format!("{:7} ", result.words));
@@ -92,15 +92,15 @@ fn print_result(result: &CountResult, options: &WcOptions, file_name: Option<&st
 
 #[cfg_attr(feature = "start", start)]
 pub fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() });
+    let args = parse_args(argc, argv).into_iter();
+
+    let mut files = Vec::new();
     let mut options = WcOptions {
         count_bytes: false,
         count_chars: false,
         count_lines: false,
         count_words: false,
     };
-    let mut files = Vec::new();
-    let args = args.collect::<Vec<&[u8]>>();
 
     for arg in args {
         if arg.starts_with(b"-") && arg.len() > 1 {

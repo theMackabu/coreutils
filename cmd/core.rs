@@ -13,8 +13,6 @@ mod rm;
 mod touch;
 mod wc;
 
-use std::ffi::CStr;
-
 const USAGE: &str = "usage: core <command> [arguments...]
 
 Available commands:
@@ -29,7 +27,7 @@ Available commands:
 
 #[start]
 fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let args: Vec<&[u8]> = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() }).collect();
+    let args = prelude::parse_args(argc, argv);
 
     if args.is_empty() {
         usage!();

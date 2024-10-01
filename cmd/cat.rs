@@ -63,7 +63,9 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
 
 #[cfg_attr(feature = "start", start)]
 pub fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() });
+    let mut args = parse_args(argc, argv).into_iter();
+    let mut files = Vec::new();
+
     let mut options = CatOptions {
         number_nonblank: false,
         show_ends: false,
@@ -72,8 +74,6 @@ pub fn _start(argc: isize, argv: *const *const u8) -> isize {
         show_tabs: false,
         show_nonprinting: false,
     };
-    let mut files = Vec::new();
-    let mut args = args.collect::<Vec<&[u8]>>().into_iter();
 
     if argc < 2 {
         usage!();

@@ -35,10 +35,9 @@ fn remove_file(path: &Path, options: &RemoveOptions) -> Result<(), Box<dyn Error
 
 #[cfg_attr(feature = "start", start)]
 pub fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() });
+    let mut args = parse_args(argc, argv).into_iter();
     let mut options = RemoveOptions { recursive: false, force: false };
     let mut files = Vec::new();
-    let mut args = args.collect::<Vec<&[u8]>>().into_iter();
 
     if argc < 2 {
         usage!();
