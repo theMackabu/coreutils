@@ -1,5 +1,5 @@
 macro_rules! export {
-    ($output:ident, $body:ident) => {
+    ($output:ident, { $body:ident }) => {
         $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Brace, $body))));
     };
 }
@@ -13,6 +13,13 @@ macro_rules! quote {
 }
 
 macro_rules! quote_inner {
+    ($output:ident, # [ $($inner:tt)* ] $($rest:tt)*) => {{
+        $output.extend(std::iter::once(TokenTree::Punct(Punct::new('#', Spacing::Alone))));
+        let mut inner = TokenStream::new();
+        quote_inner!(inner, $($inner)*);
+        $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Bracket, inner))));
+        quote_inner!($output, $($rest)*);
+    }};
     ($output:ident, # ( $($expr:tt)+ ) $($rest:tt)*) => {{
         let expanded: TokenStream = $($expr)+;
         $output.extend(expanded);
@@ -51,10 +58,14 @@ macro_rules! quote_inner {
         $output.extend(std::iter::once(TokenTree::Ident(Ident::new(stringify!($i), proc_macro::Span::call_site()))));
         quote_inner!($output, $($rest)*);
     };
-    ($output:ident, $num:literal $($rest:tt)*) => {
-        $output.extend(std::iter::once(TokenTree::Literal(Literal::isize_unsuffixed($num))));
+    ($output:ident, $lit:literal $($rest:tt)*) => {{
+        let literal = match stringify!($lit) {
+            s if s.starts_with('"') => Literal::string(&s[1..s.len()-1]),
+            s => Literal::isize_unsuffixed(s.parse().unwrap()),
+        };
+        $output.extend(std::iter::once(TokenTree::Literal(literal)));
         quote_inner!($output, $($rest)*);
-    };
+    }};
     ($output:ident, $punct:tt $($rest:tt)*) => {
         quote_punct!($output, $punct);
         quote_inner!($output, $($rest)*);

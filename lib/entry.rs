@@ -16,14 +16,11 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
     let is_bin = attr.to_string().contains("bin");
 
     let cfg_attr = match is_bin {
-        false => "start",
-        true => "cfg_attr(feature = \"bin\", start)",
+        false => quote! { #[start] },
+        true => quote! { #[cfg_attr(feature = "bin", start)] },
     };
 
-    output.extend(vec![
-        TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-        TokenTree::Group(Group::new(Delimiter::Bracket, cfg_attr.parse().unwrap())),
-    ]);
+    output.extend(cfg_attr);
 
     for token in item {
         match token {
@@ -51,7 +48,7 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
                     return 0;
                 });
 
-                export!(output, body);
+                export!(output, { body });
             }
             _ => output.extend(std::iter::once(token)),
         }
