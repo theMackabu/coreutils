@@ -63,7 +63,7 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
 
 #[cfg_attr(feature = "start", start)]
 pub fn _start(argc: isize, argv: *const *const u8) -> isize {
-    let mut args = parse_args(argc, argv).into_iter();
+    let args = parse_args(argc, argv).into_iter();
     let mut files = Vec::new();
 
     let mut options = CatOptions {
@@ -79,21 +79,30 @@ pub fn _start(argc: isize, argv: *const *const u8) -> isize {
         usage!();
     }
 
-    while let Some(arg) = args.next() {
-        match arg {
-            b"-b" => options.number_nonblank = true,
-            b"-e" => {
-                options.show_ends = true;
-                options.show_nonprinting = true;
+    for arg in args {
+        if arg.starts_with(b"-") && arg.len() > 1 {
+            for &byte in &arg[1..] {
+                match byte {
+                    b'b' => options.number_nonblank = true,
+                    b'e' => {
+                        options.show_ends = true;
+                        options.show_nonprinting = true;
+                    }
+                    b'n' => options.number = true,
+                    b's' => options.squeeze_blank = true,
+                    b't' => {
+                        options.show_tabs = true;
+                        options.show_nonprinting = true;
+                    }
+                    b'v' => options.show_nonprinting = true,
+                    _ => {
+                        eprintln!("cat: invalid option -- '{}'", byte as char);
+                        usage!();
+                    }
+                }
             }
-            b"-n" => options.number = true,
-            b"-s" => options.squeeze_blank = true,
-            b"-t" => {
-                options.show_tabs = true;
-                options.show_nonprinting = true;
-            }
-            b"-v" => options.show_nonprinting = true,
-            _ => files.push(OsStr::from_bytes(arg)),
+        } else {
+            files.push(OsStr::from_bytes(arg));
         }
     }
 
