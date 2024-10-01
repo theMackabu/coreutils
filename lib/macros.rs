@@ -32,15 +32,21 @@ macro_rules! usage {
 
 #[macro_export]
 macro_rules! argument {
-    ($args:expr, $options:expr, $files:expr, $match:expr, $else:expr) => {
+    (
+        args: $args:expr,
+        options: { $( $opt:ident => $set:expr ),* },
+        command: $command:expr,
+        on_invalid: $on_invalid:expr
+    ) => {
         for arg in $args {
             if arg.starts_with(b"-") && arg.len() > 1 {
                 for &byte in &arg[1..] {
-                    $match(byte);
+                    match byte {
+                        $(b if b == stringify!($opt).as_bytes()[0] => $set, )*
+                        _ => { $on_invalid(byte as char) }
+                    }
                 }
-            } else {
-                $else(arg);
-            }
+            } else { $command(arg) }
         }
     };
 }
