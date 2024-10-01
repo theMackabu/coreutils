@@ -177,19 +177,33 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
     } else {
         let max_width = entries
             .iter()
-            .map(|entry| entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy().len())
+            .map(|entry| entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_str().unwrap_or("").len())
             .max()
             .unwrap_or(0);
 
-        let column_width = max_width + 4;
+        let column_width = max_width + 3;
         let terminal_width = std::env::var("COLUMNS").map(|s| s.parse().unwrap_or(80)).unwrap_or(80);
+
         let columns = std::cmp::min((terminal_width + column_width) / column_width, entries.len());
         let rows = (entries.len() + columns - 1) / columns;
 
+        let mut grid: Vec<Vec<&str>> = vec![vec![]; rows];
+
+        for (index, entry) in entries.iter().enumerate() {
+            let row = index % rows;
+            let col = index / rows;
+            let name = entry.path.file_name().unwrap_or(entry.path.as_os_str());
+
+            if col >= grid[row].len() {
+                grid[row].resize(col + 1, "");
+            }
+
+            grid[row][col] = name.to_str().unwrap_or("");
+        }
+
         for row in 0..rows {
             for col in 0..columns {
-                if let Some(entry) = entries.get(row + col * rows) {
-                    let name = entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy();
+                if let Some(name) = grid[row].get(col) {
                     print!("{:<width$}", name, width = column_width);
                 }
             }
