@@ -7,8 +7,7 @@ lib = "target/lib"
 extern = "../../lib"
 
 rustc = "rustc +nightly"
-flags = "-L ./target/lib -O -C codegen-units=1 %{env.import}"
-import = "--extern macros --extern prelude --extern"
+flags = "-L ./target/lib -O -C codegen-units=1"
 
 [tasks]
 test.script = ["maid build -q %{arg.1}", "./%{env.bin}/%{arg.1} %{arg.2}"]

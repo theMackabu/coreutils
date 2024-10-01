@@ -1,11 +1,11 @@
-#![cfg_attr(feature = "start", feature(start))]
+#![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 extern crate prelude;
 
 use prelude::*;
@@ -45,7 +45,7 @@ impl<'f> File<'f> {
     }
 }
 
-#[entry::gen(bin)]
+#[entry::gen(cfg = ["bin", "mut"])]
 fn entry() -> ! {
     let mut no_create = false;
     let mut time = SystemTime::now();
@@ -78,6 +78,4 @@ fn entry() -> ! {
             error!("touch: {:?}: {}", file.path, err);
         }
     }
-
-    return 0;
 }

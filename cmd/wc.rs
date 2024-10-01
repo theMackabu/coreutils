@@ -1,11 +1,11 @@
-#![cfg_attr(feature = "start", feature(start))]
+#![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 extern crate prelude;
 
 use prelude::*;
@@ -91,7 +91,7 @@ fn print_result(result: &CountResult, options: &WcOptions, file_name: Option<&st
     println!("{}", output.trim_end());
 }
 
-#[entry::gen(bin)]
+#[entry::gen(cfg = "bin")]
 fn entry() -> ! {
     let mut files = Vec::new();
     let mut options = WcOptions {
@@ -158,6 +158,4 @@ fn entry() -> ! {
             print_result(&total, &options, Some("total"));
         }
     }
-
-    return 0;
 }

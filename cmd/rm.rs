@@ -1,11 +1,11 @@
-#![cfg_attr(feature = "start", feature(start))]
+#![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 extern crate prelude;
 
 use prelude::*;
@@ -34,7 +34,7 @@ fn remove_file(path: &Path, options: &RemoveOptions) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-#[entry::gen(bin)]
+#[entry::gen(cfg = ["bin", "mut"])]
 fn entry() -> ! {
     let mut options = RemoveOptions { recursive: false, force: false };
     let mut files = Vec::new();
@@ -67,6 +67,4 @@ fn entry() -> ! {
             }
         }
     }
-
-    return 0;
 }

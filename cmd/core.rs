@@ -43,7 +43,7 @@ fn entry() -> ! {
         b"wc" => start!(wc, argc, argv),
         _ => {
             eprintln!("core: '{}' is not a core command. See 'core --help'.", String::from_utf8_lossy(args[0]));
-            1
+            return 1;
         }
     }
 }

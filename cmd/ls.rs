@@ -215,7 +215,7 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[entry::gen(bin)]
+#[entry::gen(cfg = "bin")]
 fn entry() -> ! {
     let mut paths = Vec::new();
 
@@ -267,6 +267,4 @@ fn entry() -> ! {
             println!();
         }
     }
-
-    return 0;
 }

@@ -1,11 +1,11 @@
-#![cfg_attr(feature = "start", feature(start))]
+#![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "start")]
+#[cfg(feature = "bin")]
 extern crate prelude;
 
 use prelude::*;
@@ -78,7 +78,7 @@ fn cp(source: &Path, destination: &Path, options: &CpOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[entry::gen(bin)]
+#[entry::gen(cfg = ["bin", "mut"])]
 fn entry() -> ! {
     let mut options = CpOptions::new();
     let mut sources = Vec::new();
@@ -122,6 +122,4 @@ fn entry() -> ! {
             error!("cp: cannot copy '{}' to '{}': {}", source.display(), dest.display(), err);
         }
     }
-
-    return 0;
 }

@@ -1,5 +1,9 @@
 extern crate proc_macro;
-use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, TokenStream, TokenTree};
+
+#[macro_use]
+mod quote;
+
+use proc_macro::{Delimiter, Group, Ident, Literal, Punct, Spacing, TokenStream, TokenTree};
 
 #[proc_macro_attribute]
 pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -8,7 +12,10 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut fn_name_changed = false;
     let mut body_brace_encountered = false;
 
-    let cfg_attr = match attr.to_string().contains("bin") {
+    let is_mut = attr.to_string().contains("mut");
+    let is_bin = attr.to_string().contains("bin");
+
+    let cfg_attr = match is_bin {
         false => "start",
         true => "cfg_attr(feature = \"bin\", start)",
     };
@@ -22,39 +29,31 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
         match token {
             TokenTree::Ident(ref ident) if ident.to_string() == "fn" => {
                 in_fn = true;
-                output.extend(vec![TokenTree::Ident(Ident::new("pub", ident.span())), token]);
+                output.extend(quote!(pub fn));
             }
-            TokenTree::Ident(ref ident) if in_fn && !fn_name_changed => {
+            TokenTree::Ident(ref _ident) if in_fn && !fn_name_changed => {
                 fn_name_changed = true;
-                output.extend(vec![TokenTree::Ident(Ident::new("_start", ident.span()))]);
+                output.extend(quote!(_start));
             }
             TokenTree::Group(ref group) if in_fn && group.delimiter() == Delimiter::Parenthesis => {
-                output.extend(vec![TokenTree::Group(Group::new(Delimiter::Parenthesis, "argc: isize, argv: *const *const u8".parse().unwrap()))]);
+                output.extend(quote!((argc: isize, argv: *const *const u8)));
             }
             TokenTree::Punct(ref punct) if punct.as_char() == '!' => {
-                output.extend(vec![TokenTree::Ident(Ident::new("isize", punct.span()))]);
+                output.extend(quote!(isize));
             }
             TokenTree::Group(ref group) if in_fn && group.delimiter() == Delimiter::Brace && !body_brace_encountered => {
                 body_brace_encountered = true;
-                let mut new_body = TokenStream::new();
-                new_body.extend(vec![
-                    TokenTree::Ident(Ident::new("let", group.span())),
-                    TokenTree::Ident(Ident::new("args", group.span())),
-                    TokenTree::Punct(Punct::new('=', Spacing::Alone)),
-                    TokenTree::Ident(Ident::new("prelude", group.span())),
-                    TokenTree::Punct(Punct::new(':', Spacing::Joint)),
-                    TokenTree::Punct(Punct::new(':', Spacing::Alone)),
-                    TokenTree::Ident(Ident::new("parse_args", group.span())),
-                    TokenTree::Group(Group::new(Delimiter::Parenthesis, "argc, argv".parse().unwrap())),
-                    TokenTree::Punct(Punct::new('.', Spacing::Alone)),
-                    TokenTree::Ident(Ident::new("into_iter", group.span())),
-                    TokenTree::Group(Group::new(Delimiter::Parenthesis, TokenStream::new())),
-                    TokenTree::Punct(Punct::new(';', Spacing::Alone)),
-                ]);
-                new_body.extend(group.stream());
-                output.extend(vec![TokenTree::Group(Group::new(Delimiter::Brace, new_body))]);
+                let mut body = TokenStream::new();
+
+                body.extend(quote! {
+                    let ?(is_mut: mut) args = prelude::parse_args(argc, argv)?(is_bin: .into_iter());
+                    #(group.stream());
+                    return 0;
+                });
+
+                export!(output, body);
             }
-            _ => output.extend(vec![token]),
+            _ => output.extend(std::iter::once(token)),
         }
     }
 

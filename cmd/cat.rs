@@ -62,7 +62,7 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
     Ok(())
 }
 
-#[entry::gen(bin)]
+#[entry::gen(cfg = "bin")]
 fn entry() -> ! {
     let mut files = Vec::new();
 
@@ -125,6 +125,4 @@ fn entry() -> ! {
             }
         }
     }
-
-    0
 }
