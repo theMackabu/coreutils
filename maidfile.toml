@@ -1,0 +1,22 @@
+[project]
+name = "coreutils"
+
+[env]
+bin = "target/bin"
+lib = "target/lib"
+rustc = "rustc +nightly"
+flags = "-L ./target/lib --extern macros  -O -C codegen-units=1"
+
+[tasks]
+clean.script = [
+    "rm -rf %{env.bin}",
+    "mkdir -p %{env.bin}",
+    "mkdir -p %{env.lib}",
+]
+
+test.script = "./%{env.bin}/%{arg.1} %{arg.2}"
+lib.script = "%{env.rustc} --crate-type=lib lib/macros.rs -o %{env.lib}/libmacros.rlib"
+
+[tasks.build]
+depends = ["clean", "lib"]
+script = "%{env.rustc} %{env.flags} cmd/%{arg.1}.rs -o %{env.bin}/%{arg.1}"
