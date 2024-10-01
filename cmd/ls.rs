@@ -175,16 +175,21 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
             println!("{} {:>3} {:>5} {:>5} {:>6} {} {}", mode, nlink, uid, gid, size, time, name);
         }
     } else {
-        let max_width = entries.iter().map(|entry| entry.path.file_name().unwrap().to_string_lossy().len()).max().unwrap_or(0);
+        let max_width = entries
+            .iter()
+            .map(|entry| entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy().len())
+            .max()
+            .unwrap_or(0);
 
-        let columns = 6;
         let column_width = max_width + 4;
+        let terminal_width = std::env::var("COLUMNS").map(|s| s.parse().unwrap_or(80)).unwrap_or(80);
+        let columns = std::cmp::min((terminal_width + column_width) / column_width, entries.len());
         let rows = (entries.len() + columns - 1) / columns;
 
         for row in 0..rows {
             for col in 0..columns {
                 if let Some(entry) = entries.get(row + col * rows) {
-                    let name = entry.path.file_name().unwrap().to_string_lossy();
+                    let name = entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy();
                     print!("{:<width$}", name, width = column_width);
                 }
             }
