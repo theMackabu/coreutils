@@ -1,5 +1,6 @@
-#![feature(start)]
+#![cfg_attr(feature = "start", feature(start))]
 
+#[cfg(feature = "start")]
 #[macro_use]
 extern crate macros;
 
@@ -35,8 +36,8 @@ fn remove_file(path: &Path, options: &RemoveOptions) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-#[start]
-fn _start(argc: isize, argv: *const *const u8) -> isize {
+#[cfg_attr(feature = "start", start)]
+pub fn _start(argc: isize, argv: *const *const u8) -> isize {
     let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() });
     let mut options = RemoveOptions { recursive: false, force: false };
     let mut files = Vec::new();

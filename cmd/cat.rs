@@ -1,4 +1,6 @@
-#![feature(start)]
+#![cfg_attr(feature = "start", feature(start))]
+
+#[cfg(feature = "start")]
 #[macro_use]
 extern crate macros;
 
@@ -63,8 +65,8 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
     Ok(())
 }
 
-#[start]
-fn _start(argc: isize, argv: *const *const u8) -> isize {
+#[cfg_attr(feature = "start", start)]
+pub fn _start(argc: isize, argv: *const *const u8) -> isize {
     let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() });
     let mut options = CatOptions {
         number_nonblank: false,
