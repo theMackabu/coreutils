@@ -3,6 +3,10 @@ macro_rules! module {
     ($($name:ident),+) => {
         $(mod $name;)+
 
+        fn modules() -> &'static [(&'static str, fn(argc: isize, argv: *const *const u8) -> isize)] {
+            &[$((stringify!($name), $name::_start),)+]
+        }
+
         fn init_commands() -> &'static [(&'static str, &'static str)] {
             &[$($name::COMMAND,)+]
         }
@@ -30,6 +34,11 @@ macro_rules! usage {
     () => {{
         eprintln!("{}", &*USAGE);
         std::process::exit(1)
+    }};
+    (help->$($arg:tt)*) => {{
+        println!("{}", &*USAGE);
+        println!($($arg)*);
+        std::process::exit(0)
     }};
     ($($arg:tt)*) => {{
         eprintln!($($arg)*);
@@ -67,22 +76,51 @@ macro_rules! argument {
 #[cfg(not(feature = "bin"))]
 #[macro_export]
 macro_rules! entry {
-    (args: { $( $key:ident $( : $value:ident )? ),* }, commands: [$($cmd:ident),+ $(,)?], fallback: $command:expr) => {
+    (args: { $( $key:ident $( : $value:ident )? ),* }, options: {
+        $( $short_opt:ident | $long_opt:ident: $opt_desc:expr => $opt_action:expr ),* $(,)?
+    }) => {
         let mut s_args = Args { $($key $( : $value )?,)* };
 
         if s_args.program == b"core" {
             if s_args.args.is_empty() {
-                usage!();
+                usage!(help->"\n{}", options_usage())
             }
             s_args.program = s_args.args[0];
         }
 
-        match str::from_utf8(s_args.program) {
-            $(Ok(stringify!($cmd)) => match s_args.caller {
-                b"core" => $cmd::_start(s_args.argc - 1, unsafe { s_args.argv.offset(1) }),
-                _ => $cmd::_start(s_args.argc, s_args.argv),
-            },)*
-            fallback_cmd => $command(fallback_cmd.unwrap_or("?")),
+        let program_str = str::from_utf8(s_args.program).unwrap_or("?");
+        let dispatch_table: &[(&str, fn(argc: isize, argv: *const *const u8) -> isize)] = modules();
+
+        if let Some(&(_, start_fn)) = dispatch_table.iter().find(|&&(cmd_name, _)| cmd_name == program_str) {
+            match s_args.caller {
+                b"core" => start_fn(s_args.argc - 1, unsafe { s_args.argv.offset(1) }),
+                _ => start_fn(s_args.argc, s_args.argv),
+            }
+        } else {
+            match program_str {
+                $(concat!("-", stringify!($short_opt)) => $opt_action,)*
+                $(concat!("--", stringify!($long_opt)) => $opt_action,)*
+                cmd => error!("core: '{cmd}' is not a option. See 'core --help'."),
+            }
+        };
+
+        fn options_usage() -> String {
+            let mut usage_str = String::from("Options:\n");
+            let mut option_lines = Vec::new();
+
+            let max_opt_len = {
+                let short_opts = vec![$(format!("-{}", stringify!($short_opt)),)*];
+                let long_opts = vec![$(format!("--{}", stringify!($long_opt)),)*];
+                short_opts.iter().chain(long_opts.iter()).map(|opt| opt.len()).max().unwrap_or(0)
+            };
+
+            $(
+                let short_opt = format!("-{}", stringify!($short_opt));
+                let long_opt = format!("--{}", stringify!($long_opt));
+                option_lines.push(format!("  {:<width$}  {}", format!("{}, {}", short_opt, long_opt), $opt_desc, width = max_opt_len + 2));
+            )*
+
+            usage_str.tap(|s| s.push_str(&option_lines.join("\n")))
         }
     };
 }

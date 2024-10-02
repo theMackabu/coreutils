@@ -12,6 +12,7 @@ module! {
     tty, uname, wc, who, whoami, yes
 }
 
+use prelude::Tap;
 use std::{ffi::OsStr, os::unix::ffi::OsStrExt, path::Path, str};
 
 struct Args {
@@ -32,11 +33,11 @@ fn generate_usage() -> String {
 
     let available_commands = COMMANDS
         .iter()
-        .map(|(name, desc)| format!("    {:<width$} {}", name, desc, width = max_name_len + 2))
+        .map(|(name, desc)| format!("  {:<width$} {}", name, desc, width = max_name_len + 2))
         .collect::<Vec<_>>()
         .join("\n");
 
-    format!("usage: core <command> [arguments...]\nAvailable commands:\n{}", available_commands)
+    format!("usage: core <command> [arguments...]\n\nAvailable commands:\n{}", available_commands)
 }
 
 #[entry::gen]
@@ -46,13 +47,9 @@ fn entry() -> ! {
 
     entry! {
         args: { argc, args, program, argv, caller: program },
-        commands: [cat, cp, ln, ls, mkdir, mv, du, env, echo, rm, readlink, pwd, printf, printenv, sum, stat, tty, tail, touch, yes, uname, wc, whoami, who],
-        fallback: |cmd| {
-            match cmd {
-                "--help" => usage!(),
-                "--version" => stdout!("{} ({} {})", env!("PKG_VERSION"), env!("BUILD_DATE"), env!("GIT_HASH")),
-                _ => error!("core: '{cmd}' is not a core command. See 'core --help'.")
-            }
+        options: {
+            h | help: "Print help" => usage!(help->"\n{}", options_usage()),
+            v | version: "Print version" => stdout!("{} ({} {})", env!("PKG_VERSION"), env!("BUILD_DATE"), env!("GIT_HASH")),
         }
     }
 }

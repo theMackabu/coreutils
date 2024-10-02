@@ -12,3 +12,12 @@ pub fn parse_args(argc: isize, argv: *const *const u8) -> (&'static [u8], Vec<&'
     let args = (1..argc).map(|arg| unsafe { CStr::from_ptr(*argv.offset(arg) as *const i8).to_bytes() }).collect::<Vec<&[u8]>>();
     return (program, args);
 }
+
+pub trait Tap: Sized {
+    fn tap<F: FnOnce(&mut Self)>(mut self, f: F) -> Self {
+        f(&mut self);
+        self
+    }
+}
+
+impl<T> Tap for T {}
