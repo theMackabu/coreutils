@@ -118,7 +118,7 @@ fn build_target(target: &str, rules: &HashMap<String, Rule>, options: &MkOptions
 #[entry::gen(cfg = ["bin", "mut"])]
 fn entry() -> ! {
     let mut options = MkOptions {
-        mkfile: "mkfile".to_string(),
+        mkfile: "mkfile".into(),
         assume_out_of_date: false,
         debug: false,
         explain: false,
@@ -134,6 +134,7 @@ fn entry() -> ! {
         args: args.to_owned(),
         options: {
             f => {
+                args.next();
                 options.mkfile = String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("mk: option requires an argument -- 'f'"))).into_owned();
             },
             a => options.assume_out_of_date = true,

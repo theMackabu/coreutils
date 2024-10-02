@@ -1,4 +1,5 @@
 #![feature(start)]
+#![allow(clashing_extern_declarations)]
 
 #[macro_use]
 extern crate macros;
@@ -8,9 +9,9 @@ extern crate prelude;
 module! {
     cat, cp, du, echo, env, ln, ls,
     mkdir, mv, printenv, printf, pwd,
-    readlink, rm, stat, sleep, sum,
+    readlink, rm, stat, sleep, sum, id,
     tail, touch, tty, uname, wc, who,
-    whoami, yes, chmod, date, mk
+    whoami, yes, chmod, date, mk, chown
 }
 
 use prelude::Tap;

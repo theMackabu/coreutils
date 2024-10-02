@@ -25,6 +25,7 @@ clean.script = [
 path = "target/lib"
 script = [
     "%{env.rustc} --crate-type=lib %{env.extern}/env.rs",
+    "%{env.rustc} --crate-type=lib %{env.extern}/uid.rs",
     "%{env.rustc} --crate-type=lib %{env.extern}/prelude.rs",
     "%{env.rustc} --crate-type=lib %{env.extern}/macros.rs",
     "%{env.rustc} --crate-type=proc-macro %{env.extern}/entry.rs",
