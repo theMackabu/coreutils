@@ -13,7 +13,7 @@ use std::fs::File;
 use std::io::{self, BufReader, Read};
 
 const USAGE: &str = "usage: sum [FILE]...";
-pub const COMMAND: (&str, &str) = ("sum", "Checksum and count the blocks in a file");
+pub const DESCRIPTION: &str = "Checksum and count the blocks in a file";
 
 fn calculate_sum(mut reader: impl Read) -> io::Result<(u32, u32)> {
     let mut sum = 0u32;

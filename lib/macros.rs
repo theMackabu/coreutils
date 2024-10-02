@@ -8,7 +8,7 @@ macro_rules! module {
         }
 
         fn init_commands() -> &'static [(&'static str, &'static str)] {
-            &[$($name::COMMAND,)+]
+            &[$((stringify!($name), $name::DESCRIPTION),)+]
         }
     };
 }
@@ -147,4 +147,13 @@ macro_rules! __lazy_lock_internal {
         $crate::lazy_lock!($($t)*);
     };
     () => ()
+}
+
+#[macro_export]
+macro_rules! impl_is_minus_one {
+    ($($t:ident)*) => ($(impl IsMinusOne for $t {
+        fn is_minus_one(&self) -> bool {
+            *self == -1
+        }
+    })*)
 }

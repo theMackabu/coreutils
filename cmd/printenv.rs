@@ -11,7 +11,7 @@ extern crate prelude;
 
 use std::{ffi::OsStr, os::unix::prelude::OsStrExt};
 
-pub const COMMAND: (&str, &str) = ("printenv", "Print the environment");
+pub const DESCRIPTION: &str = "Print the environment";
 
 #[entry::gen(cfg = ["bin", "no_iter"])]
 fn entry() -> ! {

@@ -9,10 +9,10 @@ extern crate entry;
 #[cfg(feature = "bin")]
 extern crate prelude;
 
-use self::date::DateTime;
+use date::date::DateTime;
 
 const USAGE: &str = "usage: date -u [+FORMAT]";
-pub const COMMAND: (&str, &str) = ("date", "Print or set the system date and time");
+pub const DESCRIPTION: &str = "Print or set the system date and time";
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {

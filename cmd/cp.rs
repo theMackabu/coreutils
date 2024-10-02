@@ -11,7 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file";
-pub const COMMAND: (&str, &str) = ("cp", "copy files and directories");
+pub const DESCRIPTION: &str = "Copy files and directories";
 
 struct CpOptions {
     recursive: bool,

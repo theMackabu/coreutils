@@ -16,7 +16,7 @@ const USAGE: &str = "\
 usage:  chmod [-fhv] [-R [-H | -L | -P]] [-a | +a | =a  [i][# [ n]]] mode|entry file ...
         chmod [-fhv] [-R [-H | -L | -P]] [-E | -C | -N | -i | -I] file ...";
 
-pub const COMMAND: (&str, &str) = ("chmod", "Change file mode bits");
+pub const DESCRIPTION: &str = "Change file mode bits";
 
 struct ChmodOptions {
     force: bool,

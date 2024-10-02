@@ -12,7 +12,7 @@ use prelude::*;
 use std::time::Duration;
 
 const USAGE: &str = "usage: tail [-f] [-n lines] [FILE]";
-pub const COMMAND: (&str, &str) = ("tail", "Output the last part of files");
+pub const DESCRIPTION: &str = "Output or follow the last part of files";
 
 fn tail_lines<R: Read>(reader: R, num_lines: usize) -> io::Result<Vec<String>> {
     let mut lines = Vec::new();

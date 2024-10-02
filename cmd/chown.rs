@@ -1,19 +1,49 @@
+#![allow(non_camel_case_types)]
 #![cfg_attr(feature = "bin", feature(start))]
 
 #[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
 extern crate entry;
+extern crate env;
 extern crate uid;
 
 #[cfg(feature = "bin")]
 extern crate prelude;
 
-use self::uid::*;
+use chown::env::{cvt, run_path_with_cstr};
+use chown::uid::*;
 use prelude::*;
+use std::ffi::{c_char, c_int};
 
 const USAGE: &str = "usage: chown [-h] OWNER[:GROUP] FILE...";
-pub const COMMAND: (&str, &str) = ("chown", "Change file owner and group");
+pub const DESCRIPTION: &str = "Change file owner and group";
+
+pub type gid_t = u32;
+pub type uid_t = u32;
+
+#[link(name = "c")]
+extern "C" {
+    #[cfg_attr(all(target_os = "macos", target_arch = "x86"), link_name = "lchown$UNIX2003")]
+    fn lchown(path: *const c_char, uid: uid_t, gid: gid_t) -> c_int;
+    fn chown(path: *const c_char, uid: uid_t, gid: gid_t) -> c_int;
+}
+
+fn do_lchown<P: AsRef<Path>>(path: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
+    let path = path.as_ref();
+    let uid = uid.unwrap_or(u32::MAX);
+    let gid = gid.unwrap_or(u32::MAX);
+
+    run_path_with_cstr(path, &|path| cvt(unsafe { lchown(path.as_ptr(), uid as uid_t, gid as gid_t) }).map(|_| ()))
+}
+
+fn do_chown<P: AsRef<Path>>(dir: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
+    let dir = dir.as_ref();
+    let uid = uid.unwrap_or(u32::MAX);
+    let gid = gid.unwrap_or(u32::MAX);
+
+    run_path_with_cstr(dir, &|dir| cvt(unsafe { chown(dir.as_ptr(), uid as uid_t, gid as gid_t) }).map(|_| ()))
+}
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {
@@ -62,10 +92,9 @@ fn entry() -> ! {
     };
 
     for file in files {
-        let result = if no_dereference {
-            std::os::unix::fs::lchown(&file, Some(uid), gid)
-        } else {
-            std::os::unix::fs::chown(&file, Some(uid), gid)
+        let result = match no_dereference {
+            true => do_lchown(&file, Some(uid), gid),
+            false => do_chown(&file, Some(uid), gid),
         };
 
         if let Err(e) = result {

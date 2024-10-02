@@ -12,7 +12,7 @@ use std::thread;
 use std::time::Duration;
 
 const USAGE: &str = "usage: sleep NUMBER[msMhd]";
-pub const COMMAND: (&str, &str) = ("sleep", "Delay for a specified amount of time");
+pub const DESCRIPTION: &str = "Delay for a specified amount of time";
 
 fn parse_duration(s: &str) -> Result<Duration, Box<dyn std::error::Error>> {
     let mut chars = s.chars().peekable();

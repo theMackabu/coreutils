@@ -12,7 +12,7 @@ use prelude::*;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const USAGE: &str = "usage: touch [-c] [-t time] files...";
-pub const COMMAND: (&str, &str) = ("touch", "change file timestamps");
+pub const DESCRIPTION: &str = "Change file timestamps";
 
 struct File<'f> {
     path: &'f OsStr,

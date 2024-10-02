@@ -11,7 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: rm [-rf] file...";
-pub const COMMAND: (&str, &str) = ("rm", "remove files or directories");
+pub const DESCRIPTION: &str = "Remove files or directories";
 
 struct RemoveOptions {
     recursive: bool,

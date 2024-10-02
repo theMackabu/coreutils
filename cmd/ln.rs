@@ -4,14 +4,28 @@
 #[macro_use]
 extern crate macros;
 extern crate entry;
+extern crate env;
 
 #[cfg(feature = "bin")]
 extern crate prelude;
 
+use ln::env::{cvt, run_path_with_cstr};
 use prelude::*;
+use std::ffi::{c_char, c_int};
 
 const USAGE: &str = "usage: ln [-s] [-f] TARGET LINK_NAME";
-pub const COMMAND: (&str, &str) = ("ln", "Make links between files");
+pub const DESCRIPTION: &str = "Make links between files";
+
+#[link(name = "c")]
+extern "C" {
+    fn symlink(path1: *const c_char, path2: *const c_char) -> c_int;
+}
+
+fn symbolic_link(original: &Path, link: &Path) -> io::Result<()> {
+    run_path_with_cstr(original, &|original| {
+        run_path_with_cstr(link, &|link| cvt(unsafe { symlink(original.as_ptr(), link.as_ptr()) }).map(|_| ()))
+    })
+}
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {
@@ -45,10 +59,9 @@ fn entry() -> ! {
         let _ = fs::remove_file(&link_name);
     }
 
-    let result = if symbolic {
-        std::os::unix::fs::symlink(&target, &link_name)
-    } else {
-        std::fs::hard_link(&target, &link_name)
+    let result = match symbolic {
+        true => symbolic_link(&target, &link_name),
+        false => std::fs::hard_link(&target, &link_name),
     };
 
     if let Err(err) = result {

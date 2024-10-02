@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::process::Command;
 
 const USAGE: &str = "usage: mk [-f mkfile] ... [ option ... ] [ target ... ]";
-pub const COMMAND: (&str, &str) = ("mk", "Maintain make (plan9) related files");
+pub const DESCRIPTION: &str = "Maintain make (plan9) related files";
 
 #[derive(Clone)]
 struct Rule {

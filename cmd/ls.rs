@@ -9,7 +9,7 @@ extern crate entry;
 #[cfg(feature = "bin")]
 extern crate prelude;
 
-use self::date::DateTime;
+use ls::date::DateTime;
 use prelude::*;
 use std::{
     os::unix::fs::MetadataExt,
@@ -17,7 +17,7 @@ use std::{
 };
 
 const USAGE: &str = "usage: ls [-alhrt] [file ...]";
-pub const COMMAND: (&str, &str) = ("ls", "list directory contents");
+pub const DESCRIPTION: &str = "List directory contents";
 
 struct LsOptions {
     all: bool,

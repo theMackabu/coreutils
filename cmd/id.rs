@@ -9,11 +9,11 @@ extern crate uid;
 #[cfg(feature = "bin")]
 extern crate prelude;
 
-use self::uid::*;
+use id::uid::*;
 use std::io;
 
 const USAGE: &str = "usage: id [-u] [-g] [-G] [-n] [user]";
-pub const COMMAND: (&str, &str) = ("id", "Print user and group information for the specified USER or (when USER omitted) for the current user");
+pub const DESCRIPTION: &str = "Print user and group information";
 
 fn print_id(options: &IdOptions, username: Option<&str>, group: Option<&str>) -> io::Result<()> {
     let (uid, gid, name) = get_user_info(username, group)?;

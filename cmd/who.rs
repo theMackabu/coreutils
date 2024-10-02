@@ -13,7 +13,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::{mem, ptr};
 
 const USAGE: &str = "usage: who [-aH]";
-pub const COMMAND: (&str, &str) = ("who", "Show who is logged on");
+pub const DESCRIPTION: &str = "Show who is logged on";
 
 #[cfg(target_os = "macos")]
 const UTMP_FILE: &str = "/var/run/utmpx";

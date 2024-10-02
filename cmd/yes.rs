@@ -10,7 +10,7 @@ extern crate prelude;
 
 use std::io::{self, Write};
 
-pub const COMMAND: (&str, &str) = ("yes", "Print a string repeatedly");
+pub const DESCRIPTION: &str = "Print a string repeatedly";
 
 #[entry::gen(cfg = ["bin", "no_ret", "no_iter", "mut"])]
 fn entry() -> ! {

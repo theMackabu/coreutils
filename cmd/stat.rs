@@ -9,13 +9,13 @@ extern crate entry;
 #[cfg(feature = "bin")]
 extern crate prelude;
 
-use self::date::DateTime;
 use prelude::*;
+use stat::date::DateTime;
 use std::os::unix::fs::MetadataExt;
 use std::time::{Duration, UNIX_EPOCH};
 
 const USAGE: &str = "usage: stat [FILE]...";
-pub const COMMAND: (&str, &str) = ("stat", "Display file or file system status");
+pub const DESCRIPTION: &str = "Display file or file system status";
 
 fn format_mode(mode: u32) -> String {
     let file_type = match mode & 0o170000 {

@@ -1,8 +1,12 @@
+#[path = "macros.rs"]
+mod macros;
+
 use std::{
     ffi::{CStr, CString, OsStr, OsString},
     io,
     mem::MaybeUninit,
     os::{unix::ffi::OsStrExt, unix::prelude::OsStringExt},
+    path::Path,
     ptr, slice,
     vec::IntoIter,
 };
@@ -11,6 +15,12 @@ use std::{
 const MAX_STACK_ALLOCATION: usize = 384;
 #[cfg(target_os = "espidf")]
 const MAX_STACK_ALLOCATION: usize = 32;
+
+pub trait IsMinusOne {
+    fn is_minus_one(&self) -> bool;
+}
+
+impl_is_minus_one! { i8 i16 i32 i64 isize }
 
 #[link(name = "c")]
 extern "C" {
@@ -75,6 +85,11 @@ fn run_with_cstr_allocating<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T>)
 }
 
 #[inline]
+pub fn run_path_with_cstr<T>(path: &Path, f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> {
+    run_with_cstr(path.as_os_str().as_encoded_bytes(), f)
+}
+
+#[inline]
 pub fn run_with_cstr<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> {
     if bytes.len() >= MAX_STACK_ALLOCATION {
         run_with_cstr_allocating(bytes, f)
@@ -122,4 +137,12 @@ pub fn get(k: &OsStr) -> Option<OsString> {
     })
     .ok()
     .flatten()
+}
+
+pub fn cvt<T: IsMinusOne>(t: T) -> crate::io::Result<T> {
+    if t.is_minus_one() {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(t)
+    }
 }

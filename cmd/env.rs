@@ -12,7 +12,7 @@ extern crate prelude;
 use std::{collections::HashMap, str::from_utf8};
 
 const USAGE: &str = "usage: env [-i] [NAME=VALUE]... [COMMAND [ARG]...]";
-pub const COMMAND: (&str, &str) = ("env", "Set the environment for command invocation");
+pub const DESCRIPTION: &str = "Set the environment for command invocation";
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {

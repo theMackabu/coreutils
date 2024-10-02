@@ -13,7 +13,7 @@ use std::ffi::CStr;
 use std::os::raw::c_char;
 
 const USAGE: &str = "usage: whoami";
-pub const COMMAND: (&str, &str) = ("whoami", "Print effective user name");
+pub const DESCRIPTION: &str = "Print effective user name";
 
 extern "C" {
     fn getlogin() -> *const c_char;
@@ -34,13 +34,11 @@ struct passwd {
 
 fn get_username() -> Result<String, Box<dyn Error>> {
     unsafe {
-        // First, try getlogin()
         let login = getlogin();
         if !login.is_null() {
             return Ok(CStr::from_ptr(login).to_string_lossy().into_owned());
         }
 
-        // If getlogin() fails, fall back to getpwuid()
         let uid = geteuid();
         let pw = getpwuid(uid);
         if pw.is_null() {

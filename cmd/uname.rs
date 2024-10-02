@@ -9,7 +9,7 @@ extern crate entry;
 extern crate prelude;
 
 const USAGE: &str = "usage: uname [-asnrvmo]";
-pub const COMMAND: (&str, &str) = ("uname", "Print system information");
+pub const DESCRIPTION: &str = "Print system information";
 
 #[cfg(target_os = "macos")]
 #[link(name = "System", kind = "framework")]
