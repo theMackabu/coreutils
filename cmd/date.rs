@@ -17,7 +17,7 @@ pub const COMMAND: (&str, &str) = ("date", "Print or set the system date and tim
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {
     let mut now = DateTime::now(false);
-    let mut format = String::from("%a %b %d %H:%M:%S %Z %Y");
+    let mut format = String::from("%a %b %r %H:%M:%S %Z %Y");
 
     argument! {
         args: args,
