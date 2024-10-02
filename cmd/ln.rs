@@ -11,6 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: ln [-s] [-f] TARGET LINK_NAME";
+pub const COMMAND: (&str, &str) = ("ln", "Make links between files");
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {

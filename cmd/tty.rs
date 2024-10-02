@@ -11,6 +11,7 @@ extern crate prelude;
 use std::os::unix::io::AsRawFd;
 
 const USAGE: &str = "usage: tty [-s]";
+pub const COMMAND: (&str, &str) = ("tty", "Print the file name of the terminal");
 
 #[cfg(target_os = "macos")]
 #[link(name = "c")]

@@ -11,6 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: mv [-f | -i | -n] [-v] source... destination";
+pub const COMMAND: (&str, &str) = ("mv", "move (rename) files");
 
 struct MvOptions {
     force: bool,

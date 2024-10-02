@@ -13,6 +13,7 @@ use std::{fs::exists, os::unix::fs::PermissionsExt};
 
 const DEFAULT_MODE: u32 = 0o0777;
 const USAGE: &str = "usage: mkdir [-p] [-m mode] dir...";
+pub const COMMAND: (&str, &str) = ("mkdir", "make directories");
 
 struct Dir<'d> {
     path: &'d OsStr,

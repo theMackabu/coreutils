@@ -11,6 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: wc [-clmw] [file ...]";
+pub const COMMAND: (&str, &str) = ("wc", "print newline, word, and byte counts for each file");
 
 struct WcOptions {
     count_bytes: bool,

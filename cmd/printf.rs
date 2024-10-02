@@ -12,6 +12,7 @@ use std::io::{self, Write};
 use std::str::from_utf8;
 
 const USAGE: &str = "usage: printf FORMAT [ARGUMENT]...";
+pub const COMMAND: (&str, &str) = ("printf", "Format and print data");
 
 fn parse_format(fmt: &str, args: &[&str]) -> String {
     let mut result = String::new();

@@ -11,6 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: readlink [-f] FILE";
+pub const COMMAND: (&str, &str) = ("readlink", "Print resolved symbolic links or canonical file names");
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {

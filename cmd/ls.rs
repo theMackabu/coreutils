@@ -15,6 +15,7 @@ use std::{
 };
 
 const USAGE: &str = "usage: ls [-alhrt] [file ...]";
+pub const COMMAND: (&str, &str) = ("ls", "list directory contents");
 
 struct LsOptions {
     all: bool,

@@ -11,6 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: pwd [-L|-P]";
+pub const COMMAND: (&str, &str) = ("pwd", "Print name of current/working directory");
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {

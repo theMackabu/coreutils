@@ -1,4 +1,15 @@
 #[macro_export]
+macro_rules! module {
+    ($($name:ident),+) => {
+        $(mod $name;)+
+
+        fn init_commands() -> &'static [(&'static str, &'static str)] {
+            &[$($name::COMMAND,)+]
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! stdout {
     ($($arg:tt)*) => {{
         println!($($arg)*);
@@ -17,17 +28,17 @@ macro_rules! error {
 #[macro_export]
 macro_rules! usage {
     () => {{
-        eprintln!("{USAGE}");
+        eprintln!("{}", &*USAGE);
         std::process::exit(1)
     }};
     ($($arg:tt)*) => {{
         eprintln!($($arg)*);
-        eprintln!("{USAGE}");
+        eprintln!("{}", &*USAGE);
         std::process::exit(1)
     }};
     ($code:expr, $($arg:tt)*) => {{
         eprintln!($($arg)*);
-        eprintln!("{USAGE}");
+        eprintln!("{}", &*USAGE);
         std::process::exit($code)
     }};
 }
@@ -74,4 +85,28 @@ macro_rules! entry {
             fallback_cmd => $command(fallback_cmd.unwrap_or("?")),
         }
     };
+}
+
+#[macro_export]
+macro_rules! lazy_lock {
+    ($(#[$attr:meta])* static $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+        $crate::__lazy_lock_internal!($(#[$attr])* () static $N : $T = $e; $($t)*);
+    };
+    ($(#[$attr:meta])* pub static $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+        $crate::__lazy_lock_internal!($(#[$attr])* (pub) static $N : $T = $e; $($t)*);
+    };
+    ($(#[$attr:meta])* pub ($($vis:tt)+) static $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+        $crate::__lazy_lock_internal!($(#[$attr])* (pub ($($vis)+)) static $N : $T = $e; $($t)*);
+    };
+    () => ()
+}
+
+#[macro_export]
+macro_rules! __lazy_lock_internal {
+    ($(#[$attr:meta])* ($($vis:tt)*) static $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+        $(#[$attr])*
+        $($vis)* static $N: std::sync::LazyLock<$T> = std::sync::LazyLock::new(|| $e);
+        $crate::lazy_lock!($($t)*);
+    };
+    () => ()
 }

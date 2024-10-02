@@ -13,6 +13,7 @@ use std::ffi::CStr;
 use std::os::raw::c_char;
 
 const USAGE: &str = "usage: whoami";
+pub const COMMAND: (&str, &str) = ("whoami", "Print effective user name");
 
 extern "C" {
     fn getlogin() -> *const c_char;

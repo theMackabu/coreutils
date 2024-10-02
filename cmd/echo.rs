@@ -9,6 +9,7 @@ extern crate entry;
 extern crate prelude;
 
 const USAGE: &str = "usage: echo [-n] [STRING]...";
+pub const COMMAND: (&str, &str) = ("echo", "display a line of text");
 
 #[entry::gen(cfg = "bin")]
 fn entry() -> ! {

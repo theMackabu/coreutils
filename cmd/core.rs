@@ -5,30 +5,12 @@ extern crate macros;
 extern crate entry;
 extern crate prelude;
 
-mod cat;
-mod cp;
-mod du;
-mod echo;
-mod env;
-mod ln;
-mod ls;
-mod mkdir;
-mod mv;
-mod printenv;
-mod printf;
-mod pwd;
-mod readlink;
-mod rm;
-mod stat;
-mod sum;
-mod tail;
-mod touch;
-mod tty;
-mod uname;
-mod wc;
-mod who;
-mod whoami;
-mod yes;
+module! {
+    cat, cp, du, echo, env, ln, ls,
+    mkdir, mv, printenv, printf, pwd,
+    readlink, rm, stat, sum, tail, touch,
+    tty, uname, wc, who, whoami, yes
+}
 
 use std::{ffi::OsStr, os::unix::ffi::OsStrExt, path::Path, str};
 
@@ -40,33 +22,22 @@ struct Args {
     argv: *const *const u8,
 }
 
-const USAGE: &str = "usage: core <command> [arguments...]
+lazy_lock! {
+    static USAGE: String = generate_usage();
+    static COMMANDS: &'static [(&'static str, &'static str)] = init_commands();
+}
 
-Available commands:
-    cat       concatenate and print files
-    cp        copy files and directories
-    ls        list directory contents
-    echo      display a line of text
-    env       Set the environment for command invocation
-    ln        Make links between files
-    printenv  Print the environment
-    printf    Format and print data
-    pwd       Print name of current/working directory
-    readlink  Print resolved symbolic links or canonical file names
-    mkdir     make directories
-    mv        move (rename) files
-    rm        remove files or directories
-    stat      Display file or file system status
-    sum       Checksum and count the blocks in a file
-    tail      Output the last part of files
-    tty       Print the file name of the terminal
-    touch     change file timestamps
-    du        estimate file space usage
-    uname     Print system information
-    yes       Print a string repeatedly
-    whoami    Print effective user name
-    who       Show who is logged on
-    wc        print newline, word, and byte counts for each file";
+fn generate_usage() -> String {
+    let max_name_len = COMMANDS.iter().map(|(name, _)| name.len()).max().unwrap_or(0);
+
+    let available_commands = COMMANDS
+        .iter()
+        .map(|(name, desc)| format!("    {:<width$} {}", name, desc, width = max_name_len + 2))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    format!("usage: core <command> [arguments...]\nAvailable commands:\n{}", available_commands)
+}
 
 #[entry::gen]
 fn entry() -> ! {

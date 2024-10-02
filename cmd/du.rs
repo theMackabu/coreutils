@@ -12,6 +12,7 @@ use prelude::*;
 use std::os::unix::fs::MetadataExt;
 
 const USAGE: &str = "usage: du [-ahsH] [file ...]";
+pub const COMMAND: (&str, &str) = ("du", "estimate file space usage");
 
 struct DuOptions {
     all: bool,

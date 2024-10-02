@@ -11,6 +11,7 @@ extern crate prelude;
 use prelude::*;
 
 const USAGE: &str = "usage: cat [-benstv] [file ...]";
+pub const COMMAND: (&str, &str) = ("cat", "concatenate and print files");
 
 struct CatOptions {
     number_nonblank: bool,
