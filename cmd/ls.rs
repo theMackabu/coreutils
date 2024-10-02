@@ -3,11 +3,13 @@
 #[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
+extern crate date;
 extern crate entry;
 
 #[cfg(feature = "bin")]
 extern crate prelude;
 
+use self::date::DateTime;
 use prelude::*;
 use std::{
     os::unix::fs::MetadataExt,
@@ -57,38 +59,11 @@ fn format_mode(mode: u32) -> String {
     result
 }
 
-fn get_local_offset() -> i64 {
-    let local = SystemTime::now();
-    let secs = local.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
-    let secs_of_day = secs % 86400;
-
-    if secs_of_day < 43200 {
-        (secs_of_day / 3600) as i64
-    } else {
-        ((secs_of_day - 86400) / 3600) as i64
-    }
-}
-
 fn format_time(time: SystemTime) -> String {
-    let duration = time.duration_since(UNIX_EPOCH).unwrap_or(Duration::from_secs(0));
-    let local_offset = get_local_offset();
-    let secs = duration.as_secs() as i64 + local_offset * 3600;
+    let since = time.duration_since(UNIX_EPOCH).unwrap_or(Duration::from_secs(0));
+    let dt = DateTime::from_secs(since.as_secs() as i64, false);
 
-    let (year, month, day, hour, minute) = {
-        let days = secs / 86400;
-        let years = 1970 + (days / 365);
-        let days_of_year = days % 365;
-        let month = (days_of_year / 30) + 1;
-        let day = (days_of_year % 30) + 1;
-        let hour = (secs % 86400) / 3600;
-        let minute = (secs % 3600) / 60;
-        (years, month, day, hour, minute)
-    };
-
-    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    let month_str = months[(month as usize - 1) % 12];
-
-    format!("{year} {} {:2} {:02}:{:02}", month_str, day, hour, minute)
+    dt.format("%Y %b %r %H:%M")
 }
 
 fn format_size(size: u64, human_readable: bool) -> String {

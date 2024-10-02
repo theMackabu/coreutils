@@ -3,11 +3,13 @@
 #[cfg(feature = "bin")]
 #[macro_use]
 extern crate macros;
+extern crate date;
 extern crate entry;
 
 #[cfg(feature = "bin")]
 extern crate prelude;
 
+use self::date::DateTime;
 use prelude::*;
 use std::os::unix::fs::MetadataExt;
 use std::time::{Duration, UNIX_EPOCH};
@@ -48,8 +50,10 @@ fn format_mode(mode: u32) -> String {
 
 fn format_time(seconds: i64) -> String {
     let time = UNIX_EPOCH + Duration::from_secs(seconds as u64);
-    let datetime = time.duration_since(UNIX_EPOCH).unwrap();
-    format!("{}", datetime.as_secs())
+    let since = time.duration_since(UNIX_EPOCH).unwrap();
+    let dt = DateTime::from_secs(since.as_secs() as i64, false);
+
+    dt.format("%a %b %d %H:%M:%S %Y")
 }
 
 #[entry::gen(cfg = "bin")]
@@ -71,15 +75,9 @@ fn entry() -> ! {
         match fs::metadata(&file) {
             Ok(metadata) => {
                 println!("  File: {}", file.display());
-                println!(
-                    "  Size: {}        Blocks: {}        IO Block: {} {}",
-                    metadata.len(),
-                    metadata.blocks(),
-                    metadata.blksize(),
-                    format_mode(metadata.mode())
-                );
-                println!("Device: {}    Inode: {}     Links: {}", metadata.dev(), metadata.ino(), metadata.nlink());
-                println!("Access: {}  Uid: {}   Gid: {}", format_mode(metadata.mode()), metadata.uid(), metadata.gid());
+                println!("  Size: {:>10}    Blocks: {:>10}    IO Block: {:>10}", metadata.len(), metadata.blocks(), metadata.blksize(),);
+                println!("Device: {:>10}    Inode: {:>11}    Links: {:>10}", metadata.dev(), metadata.ino(), metadata.nlink());
+                println!("Access: {}    Uid: {:>13}    Gid: {:>13}", format_mode(metadata.mode()), metadata.uid(), metadata.gid());
                 println!("Access: {}", format_time(metadata.atime()));
                 println!("Modify: {}", format_time(metadata.mtime()));
                 println!("Change: {}", format_time(metadata.ctime()));
