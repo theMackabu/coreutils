@@ -101,7 +101,11 @@ fn format_size(size: u64, human_readable: bool) -> String {
             unit_index += 1;
         }
 
-        format!("{:.1}{}", size, units[unit_index])
+        match unit_index {
+            0 => format!("{:>4}", size as u64),
+            1 => format!("{:>3.0}K", size),
+            _ => format!("{:>3.1}{}", size, units[unit_index]),
+        }
     } else {
         size.to_string()
     }

@@ -7,6 +7,7 @@ extern crate prelude;
 
 mod cat;
 mod cp;
+mod du;
 mod ls;
 mod mkdir;
 mod mv;
@@ -34,6 +35,7 @@ Available commands:
     mv      move (rename) files
     rm      remove files or directories
     touch   change file timestamps
+    du      estimate file space usage
     wc      print newline, word, and byte counts for each file";
 
 #[entry::gen]
@@ -43,7 +45,7 @@ fn entry() -> ! {
 
     entry! {
         args: { argc, args, program, argv, caller: program },
-        commands: [cat, cp, ls, mkdir, mv, rm, touch, wc],
+        commands: [cat, cp, ls, mkdir, mv, du, rm, touch, wc],
         fallback: |cmd| {
             match cmd {
                 "--help" => usage!(),
