@@ -8,8 +8,9 @@ extern crate prelude;
 module! {
     cat, cp, du, echo, env, ln, ls,
     mkdir, mv, printenv, printf, pwd,
-    readlink, rm, stat, sum, tail, touch,
-    tty, uname, wc, who, whoami, yes
+    readlink, rm, stat, sleep, sum,
+    tail, touch, tty, uname, wc, who,
+    whoami, yes
 }
 
 use prelude::Tap;
