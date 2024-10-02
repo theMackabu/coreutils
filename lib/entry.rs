@@ -13,8 +13,10 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut fn_name_changed = false;
     let mut body_brace_encountered = false;
 
-    let is_mut = attr.to_string().contains("mut");
-    let is_bin = attr.to_string().contains("bin");
+    let mut is_mut = attr.to_string().contains("mut");
+    let mut is_bin = attr.to_string().contains("bin");
+    let mut is_ret = !attr.to_string().contains("no_ret");
+    let mut is_iter = !attr.to_string().contains("no_iter");
 
     let cfg_attr = match is_bin {
         false => quote! { #[start] },
@@ -43,11 +45,16 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
                 body_brace_encountered = true;
                 let mut body = TokenStream::new();
 
+                if !is_iter && is_bin {
+                    is_bin = false;
+                }
+
                 body.extend(quote! {
-                    let (program, args) = prelude::parse_args(argc, argv);
-                    let ?(is_mut: mut) args = args?(is_bin: .into_iter());
+                    let (program, c_args) = prelude::parse_args(argc, argv);
+                    let ?(is_mut: mut) args = c_args?(is_bin: .into_iter());
+
                     #(group.stream());
-                    return 0;
+                    ?(is_ret: return 0;)
                 });
 
                 export!(output, { body });

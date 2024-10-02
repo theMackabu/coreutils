@@ -14,6 +14,7 @@ mod mv;
 mod rm;
 mod touch;
 mod wc;
+mod yes;
 
 use std::{ffi::OsStr, os::unix::ffi::OsStrExt, path::Path, str};
 
@@ -36,6 +37,7 @@ Available commands:
     rm      remove files or directories
     touch   change file timestamps
     du      estimate file space usage
+    yes     Print a string repeatedly
     wc      print newline, word, and byte counts for each file";
 
 #[entry::gen]
@@ -45,7 +47,7 @@ fn entry() -> ! {
 
     entry! {
         args: { argc, args, program, argv, caller: program },
-        commands: [cat, cp, ls, mkdir, mv, du, rm, touch, wc],
+        commands: [cat, cp, ls, mkdir, mv, du, rm, touch, yes, wc],
         fallback: |cmd| {
             match cmd {
                 "--help" => usage!(),
