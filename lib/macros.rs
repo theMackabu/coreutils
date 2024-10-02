@@ -45,7 +45,7 @@ macro_rules! usage {
         eprintln!("{}", &*USAGE);
         std::process::exit(1)
     }};
-    ($code:expr, $($arg:tt)*) => {{
+    ($code:expr->$($arg:tt)*) => {{
         eprintln!($($arg)*);
         eprintln!("{}", &*USAGE);
         std::process::exit($code)
