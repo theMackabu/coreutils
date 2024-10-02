@@ -1,3 +1,4 @@
+#![allow(unused_mut)]
 extern crate proc_macro;
 
 #[macro_use]
@@ -43,7 +44,8 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
                 let mut body = TokenStream::new();
 
                 body.extend(quote! {
-                    let ?(is_mut: mut) args = prelude::parse_args(argc, argv)?(is_bin: .into_iter());
+                    let (program, args) = prelude::parse_args(argc, argv);
+                    let ?(is_mut: mut) args = args?(is_bin: .into_iter());
                     #(group.stream());
                     return 0;
                 });

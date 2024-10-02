@@ -1,33 +1,34 @@
-#[cfg(not(feature = "start"))]
+#[cfg(not(feature = "bin"))]
 #[macro_export]
 macro_rules! start {
-    ($ident:ident, $argc:expr, $argv:expr) => {
-        $ident::_start($argc - 1, unsafe { $argv.offset(1) })
-    };
+    ($ident:ident, $args:expr) => match $args.caller {
+        b"core" => $ident::_start($args.argc - 1, unsafe { $args.argv.offset(1) }),
+        _ => $ident::_start($args.argc, $args.argv),
+    }
 }
 
 #[macro_export]
 macro_rules! error {
-    ($($arg:tt)*) => {{
+    ($($arg:tt)*) => {
         eprintln!($($arg)*);
         std::process::exit(1)
-    }};
+    };
 }
 
 #[macro_export]
 macro_rules! usage {
-    () => {{
+    () => {
         eprintln!("{USAGE}");
         std::process::exit(1)
-    }};
-    ($msg:expr) => {{
+    };
+    ($msg:expr) => {
         eprintln!("{}\n{USAGE}", $msg);
         std::process::exit(1)
-    }};
-    ($msg:expr, $code:expr) => {{
+    };
+    ($msg:expr, $code:expr) => {
         eprintln!("{}", $msg);
         std::process::exit($code)
-    }};
+    };
 }
 
 #[macro_export]
