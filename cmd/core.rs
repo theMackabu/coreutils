@@ -44,6 +44,12 @@ fn entry() -> ! {
     entry! {
         args: { argc, args, program, argv, caller: program },
         commands: [cat, cp, ls, mkdir, mv, rm, touch, wc],
-        fallback: |cmd| error!("core: '{cmd}' is not a core command. See 'core --help'.")
+        fallback: |cmd| {
+            match cmd {
+                "--help" => usage!(),
+                "--version" => stdout!("{} ({} {})", env!("PKG_VERSION"), env!("BUILD_DATE"), env!("GIT_HASH")),
+                _ => error!("core: '{cmd}' is not a core command. See 'core --help'.")
+            }
+        }
     }
 }

@@ -1,4 +1,12 @@
 #[macro_export]
+macro_rules! stdout {
+    ($($arg:tt)*) => {{
+        println!($($arg)*);
+        std::process::exit(1)
+    }};
+}
+
+#[macro_export]
 macro_rules! error {
     ($($arg:tt)*) => {{
         eprintln!($($arg)*);
@@ -12,12 +20,14 @@ macro_rules! usage {
         eprintln!("{USAGE}");
         std::process::exit(1)
     }};
-    ($msg:expr) => {{
-        eprintln!("{}\n{USAGE}", $msg);
+    ($($arg:tt)*) => {{
+        eprintln!($($arg)*);
+        eprintln!("{USAGE}");
         std::process::exit(1)
     }};
-    ($msg:expr, $code:expr) => {{
-        eprintln!("{}", $msg);
+    ($code:expr, $($arg:tt)*) => {{
+        eprintln!($($arg)*);
+        eprintln!("{USAGE}");
         std::process::exit($code)
     }};
 }

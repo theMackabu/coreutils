@@ -237,10 +237,7 @@ fn entry() -> ! {
             t => options.sort_by_time = true
         },
         command: |arg| paths.push(PathBuf::from(OsStr::from_bytes(arg))),
-        on_invalid: |arg| {
-            eprintln!("ls: invalid option -- '{arg}'");
-            usage!();
-        }
+        on_invalid: |arg| usage!("ls: invalid option -- '{arg}'")
     }
 
     if paths.is_empty() {

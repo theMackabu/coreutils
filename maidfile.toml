@@ -1,13 +1,16 @@
 [project]
 name = "coreutils"
+version = "0.1.2"
 
 [env]
 bin = "target/bin"
 lib = "target/lib"
 extern = "../../lib"
 
-rustc = "rustc +nightly"
-flags = "-L ./target/lib -O -C codegen-units=1"
+channel = "nightly"
+cfg = "--env-set=PKG_VERSION=0.1.2"
+rustc = "rustc +%{env.channel} -Z unstable-options"
+flags = "-L ./target/lib -O -C codegen-units=1 %{env.cfg}"
 
 [tasks]
 test.script = ["maid build -q %{arg.1}", "./%{env.bin}/%{arg.1} %{arg.2}"]
@@ -28,12 +31,13 @@ script = [
 
 [tasks.build]
 depends = ["clean", "lib"]
-script = "%{env.rustc} %{env.flags} cmd/%{arg.1}.rs --cfg 'feature=\"bin\"' -o %{env.bin}/%{arg.1}"
+script = "%{env.rustc} %{env.flags} cmd/%{arg.1}.rs --cfg='feature=\"bin\"' -o %{env.bin}/%{arg.1}"
 
 [tasks.core]
 depends = ["lib"]
-script = [
-    "rm %{env.bin}/core",
-    "%{env.rustc} %{env.flags} cmd/core.rs -o %{env.bin}/core",
-    "./%{env.bin}/core %{arg.1}",
-]
+
+script = ["rm %{env.bin}/core", """
+bash -c '%{env.rustc} %{env.flags} \\
+--env-set=GIT_HASH=$(git rev-parse --short=7 HEAD) \\
+--env-set=BUILD_DATE=$(date +\"%Y-%-m-%-d\") \\
+cmd/core.rs -o %{env.bin}/core'""", "./%{env.bin}/core %{arg.1}"]
