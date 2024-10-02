@@ -11,7 +11,8 @@ module! {
     mkdir, mv, printenv, printf, pwd,
     readlink, rm, stat, sleep, sum, id,
     tail, touch, tty, uname, wc, who,
-    whoami, yes, chmod, date, mk, chown
+    whoami, yes, chmod, date, mk, chown,
+    base64, hostid, df, cksum
 }
 
 use prelude::Tap;
