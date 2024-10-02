@@ -18,6 +18,7 @@ use std::{ffi::OsStr, os::unix::ffi::OsStrExt, path::Path, str};
 
 struct Args {
     argc: isize,
+    args: Vec<&'static [u8]>,
     caller: &'static [u8],
     program: &'static [u8],
     argv: *const *const u8,
@@ -40,27 +41,9 @@ fn entry() -> ! {
     let path = Path::new(OsStr::from_bytes(program));
     let program = path.file_name().map(|s| s.as_bytes()).unwrap_or(b"core");
 
-    let mut s_arg = Args { argc, program, argv, caller: program };
-
-    if s_arg.program == b"core" {
-        if args.is_empty() {
-            usage!();
-        }
-        s_arg.program = args[0];
-    }
-
-    match s_arg.program {
-        b"cat" => start!(cat, s_arg),
-        b"cp" => start!(cp, s_arg),
-        b"ls" => start!(ls, s_arg),
-        b"mkdir" => start!(mkdir, s_arg),
-        b"mv" => start!(mv, s_arg),
-        b"rm" => start!(rm, s_arg),
-        b"touch" => start!(touch, s_arg),
-        b"wc" => start!(wc, s_arg),
-        fallback => {
-            let cmd = str::from_utf8(fallback).unwrap_or("?");
-            error!("core: '{cmd}' is not a core command. See 'core --help'.")
-        }
+    entry! {
+        args: { argc, args, program, argv, caller: program },
+        commands: [cat, cp, ls, mkdir, mv, rm, touch, wc],
+        fallback: |cmd| error!("core: '{cmd}' is not a core command. See 'core --help'.")
     }
 }
