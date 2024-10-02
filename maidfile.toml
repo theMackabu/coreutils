@@ -1,6 +1,6 @@
 [project]
 name = "coreutils"
-version = "0.1.2"
+version = "0.2.0"
 
 [env]
 bin = "target/bin"
@@ -8,7 +8,7 @@ lib = "target/lib"
 extern = "../../lib"
 
 channel = "nightly"
-cfg = "--env-set=PKG_VERSION=0.1.2"
+cfg = "--env-set=PKG_VERSION=0.2.0"
 rustc = "rustc +%{env.channel} -Z unstable-options"
 flags = "-L ./target/lib -O -C codegen-units=1 %{env.cfg}"
 

@@ -75,7 +75,7 @@ fn entry() -> ! {
 
     entry! {
         args: { argc, args, program, argv, caller: program },
-        commands: [cat, cp, ln, ls, mkdir, mv, du, env, echo, rm, readlink, pwd, printf, printenv, sum, stat, tty, touch, yes, uname, wc, whoami, who],
+        commands: [cat, cp, ln, ls, mkdir, mv, du, env, echo, rm, readlink, pwd, printf, printenv, sum, stat, tty, tail, touch, yes, uname, wc, whoami, who],
         fallback: |cmd| {
             match cmd {
                 "--help" => usage!(),
