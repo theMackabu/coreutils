@@ -14,7 +14,7 @@ use std::os::unix::fs::PermissionsExt;
 
 const USAGE: &str = "\
 usage:  chmod [-fhv] [-R [-H | -L | -P]] [-a | +a | =a  [i][# [ n]]] mode|entry file ...
-        chmod [-fhv] [-R [-H | -L | -P]] [-E | -C | -N | -i] file ...";
+        chmod [-fhv] [-R [-H | -L | -P]] [-E | -C | -N | -i | -I] file ...";
 
 pub const COMMAND: (&str, &str) = ("chmod", "Change file mode bits");
 
@@ -25,11 +25,11 @@ struct ChmodOptions {
     dereference: bool,
     no_dereference: bool,
     preserve_root: bool,
-    acl_manipulation: Option<String>,
     extended_acl: bool,
     clear_acl: bool,
     remove_acl: bool,
     inherit_acl: bool,
+    no_inherit_acl: bool,
 }
 
 #[derive(Debug)]
@@ -109,11 +109,11 @@ fn entry() -> ! {
         dereference: false,
         no_dereference: false,
         preserve_root: true,
-        acl_manipulation: None,
         extended_acl: false,
         clear_acl: false,
         remove_acl: false,
         inherit_acl: false,
+        no_inherit_acl: false,
     };
 
     let mut mode = None;
@@ -133,6 +133,7 @@ fn entry() -> ! {
             C => options.clear_acl = true,
             N => options.remove_acl = true,
             i => options.inherit_acl = true,
+            I => options.no_inherit_acl = true
         },
         command: |arg| {
             let arg = String::from_utf8_lossy(arg).into_owned();

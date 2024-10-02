@@ -10,7 +10,7 @@ module! {
     mkdir, mv, printenv, printf, pwd,
     readlink, rm, stat, sleep, sum,
     tail, touch, tty, uname, wc, who,
-    whoami, yes, chmod
+    whoami, yes, chmod, date, mk
 }
 
 use prelude::Tap;

@@ -1,0 +1,24 @@
+# Hello World mkfile
+
+# The default target
+all: hello run
+
+# Compile the hello program
+hello: hello.c
+	cc -o hello hello.c
+
+# Run the hello program
+run: hello
+	./hello
+
+# Create the hello.c file
+hello.c:
+	echo '#include <stdio.h>' > hello.c
+	echo 'int main() {' >> hello.c
+	echo '    printf("Hello, World!");' >> hello.c
+	echo '    return 0;' >> hello.c
+	echo '}' >> hello.c
+
+# Clean up
+clean:
+	rm -f hello hello.c
