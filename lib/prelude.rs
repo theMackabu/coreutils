@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 pub use std::{
     error::Error,
     ffi::{CStr, OsStr},

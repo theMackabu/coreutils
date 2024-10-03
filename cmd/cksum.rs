@@ -12,7 +12,7 @@ use prelude::*;
 use std::io::{self, Read};
 
 const USAGE: &str = "usage: cksum [FILE...]";
-pub const DESCRIPTION: &str = "Calculate the CRC32 checksums of FILES";
+pub const DESCRIPTION: &str = "Calculate the CRC32 checksums of files";
 
 fn crc32_filltable(endian: bool) -> [u32; 256] {
     let polynomial = if endian { 0x04c11db7 } else { 0xedb88320 };

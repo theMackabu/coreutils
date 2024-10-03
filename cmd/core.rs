@@ -12,7 +12,8 @@ module! {
     readlink, rm, stat, sleep, sum, id,
     tail, touch, tty, uname, wc, who,
     whoami, yes, chmod, date, mk, chown,
-    base64, hostid, df, cksum
+    base64, hostid, df, cksum, chroot, http,
+    curl
 }
 
 use prelude::Tap;
