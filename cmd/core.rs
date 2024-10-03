@@ -13,7 +13,7 @@ module! {
     tail, touch, tty, uname, wc, who,
     whoami, yes, chmod, date, mk, chown,
     base64, hostid, df, cksum, chroot, http,
-    curl
+    curl, sha1sum, time
 }
 
 use prelude::Tap;
