@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 #![cfg_attr(feature = "bin", feature(start))]
 
 #[cfg(feature = "bin")]
@@ -16,6 +17,11 @@ use std::io::{Read, SeekFrom, Write};
 use std::os::raw::{c_char, c_double, c_int, c_long, c_void};
 use std::{path::Path, slice};
 
+use self::curl::{
+    list::{self, List},
+    panic, size_t, Error, Handler, ReadError, WriteError,
+};
+
 const USAGE: &str = "Usage: curl [options...] <url>
  -d, --data <data>           HTTP POST data
  -f, --fail                  Fail fast with no output on HTTP errors
@@ -29,38 +35,6 @@ const USAGE: &str = "Usage: curl [options...] <url>
 
 pub const DESCRIPTION: &str = "Transfer data from or to a server";
 
-use self::curl::{
-    curl_easy_cleanup, curl_easy_init, curl_easy_perform, curl_easy_setopt, curl_easy_strerror, curl_slist, curl_socket_t, panic, size_t, CURLcode, CURLoption, Error, List, __enum_ty, CURL, CURLE_OK,
-    CURLOPT_CONNECTTIMEOUT, CURLOPT_FOLLOWLOCATION, CURLOPT_HEADER, CURLOPT_HTTPHEADER, CURLOPT_MAXREDIRS, CURLOPT_POSTFIELDS, CURLOPT_PROXY, CURLOPT_READDATA, CURLOPT_READFUNCTION,
-    CURLOPT_SSL_VERIFYHOST, CURLOPT_SSL_VERIFYPEER, CURLOPT_UPLOAD, CURLOPT_URL, CURLOPT_USERAGENT, CURLOPT_USERPWD, CURLOPT_VERBOSE, CURLOPT_WRITEDATA, CURLOPT_WRITEFUNCTION,
-};
-
-#[derive(Debug)]
-enum CurlError {
-    InitError,
-    OptionError(CURLcode),
-    PerformError(CURLcode),
-}
-
-#[derive(Clone, Copy)]
-pub enum SeekResult {
-    Ok = curl::CURL_SEEKFUNC_OK as isize,
-    Fail = curl::CURL_SEEKFUNC_FAIL as isize,
-    CantSeek = curl::CURL_SEEKFUNC_CANTSEEK as isize,
-}
-
-pub enum WriteError {
-    Pause,
-}
-
-pub enum ReadError {
-    Abort,
-    Pause,
-}
-
-type CurlResult<T> = Result<T, CurlError>;
-type Socket = curl::curl_socket_t;
-
 struct Collector(Vec<u8>);
 
 impl Handler for Collector {
@@ -71,58 +45,6 @@ impl Handler for Collector {
     fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
         self.0.extend_from_slice(data);
         Ok(data.len())
-    }
-}
-
-trait Handler {
-    fn result(&self) -> Vec<u8> {
-        Vec::new()
-    }
-
-    fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
-        Ok(data.len())
-    }
-
-    fn read(&mut self, data: &mut [u8]) -> Result<usize, ReadError> {
-        let _ = data;
-        Ok(0)
-    }
-
-    fn seek(&mut self, whence: SeekFrom) -> SeekResult {
-        let _ = whence;
-        SeekResult::CantSeek
-    }
-
-    fn header(&mut self, data: &[u8]) -> bool {
-        let _ = data;
-        true
-    }
-
-    fn progress(&mut self, dltotal: f64, dlnow: f64, ultotal: f64, ulnow: f64) -> bool {
-        let _ = (dltotal, dlnow, ultotal, ulnow);
-        true
-    }
-
-    fn ssl_ctx(&mut self, cx: *mut c_void) -> Result<(), Error> {
-        Ok(())
-    }
-}
-
-impl std::error::Error for CurlError {}
-
-impl std::fmt::Display for CurlError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            CurlError::InitError => write!(f, "Failed to initialize libcurl"),
-            CurlError::OptionError(code) => unsafe {
-                let msg = CStr::from_ptr(curl_easy_strerror(*code));
-                write!(f, "Failed to set libcurl option: {}", msg.to_string_lossy())
-            },
-            CurlError::PerformError(code) => unsafe {
-                let msg = CStr::from_ptr(curl_easy_strerror(*code));
-                write!(f, "Failed to perform request: {}", msg.to_string_lossy())
-            },
-        }
     }
 }
 
@@ -146,7 +68,6 @@ struct Inner<H> {
     handle: *mut curl::CURL,
     header_list: Option<List>,
     resolve_list: Option<List>,
-    connect_to_list: Option<List>,
     error_buf: RefCell<Vec<u8>>,
     handler: H,
 }
@@ -164,7 +85,7 @@ impl<H> Drop for Client<H> {
 impl<H: Handler> Client<H> {
     fn new(handler: H) -> Client<H> {
         unsafe {
-            let handle = curl_easy_init();
+            let handle = curl::curl_easy_init();
             assert!(!handle.is_null());
 
             let mut ret = Client {
@@ -172,7 +93,6 @@ impl<H: Handler> Client<H> {
                     handle,
                     header_list: None,
                     resolve_list: None,
-                    connect_to_list: None,
                     error_buf: RefCell::new(vec![0; curl::CURL_ERROR_SIZE]),
                     handler,
                 }),
@@ -233,7 +153,7 @@ impl<H: Handler> Client<H> {
     }
 
     fn setopt_long(&mut self, opt: curl::CURLoption, val: c_long) -> Result<(), Error> {
-        unsafe { self.cvt(curl_easy_setopt(self.inner.handle, opt, val)) }
+        unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, val)) }
     }
 
     fn setopt_str(&mut self, opt: curl::CURLoption, val: &CStr) -> Result<(), Error> {
@@ -249,8 +169,14 @@ impl<H: Handler> Client<H> {
         self.setopt_str(curl::CURLOPT_USERAGENT, &useragent)
     }
 
-    fn setopt_ptr(&self, opt: CURLoption, val: *const c_char) -> Result<(), Error> {
-        unsafe { self.cvt(curl_easy_setopt(self.inner.handle, opt, val)) }
+    fn headers(&mut self, list: list::List) -> Result<(), Error> {
+        let ptr = list::raw(&list);
+        self.inner.header_list = Some(list);
+        self.setopt_ptr(curl::CURLOPT_HTTPHEADER, ptr as *const _)
+    }
+
+    fn setopt_ptr(&self, opt: curl::CURLoption, val: *const c_char) -> Result<(), Error> {
+        unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, val)) }
     }
 
     fn setopt_off_t(&mut self, opt: curl::CURLoption, val: curl::curl_off_t) -> Result<(), Error> {
@@ -270,10 +196,73 @@ impl<H: Handler> Client<H> {
         unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, blob_ptr)) }
     }
 
+    fn getopt_bytes(&self, opt: curl::CURLINFO) -> Result<Option<&[u8]>, Error> {
+        unsafe {
+            let p = self.getopt_ptr(opt)?;
+            if p.is_null() {
+                Ok(None)
+            } else {
+                Ok(Some(CStr::from_ptr(p).to_bytes()))
+            }
+        }
+    }
+
+    fn getopt_ptr(&self, opt: curl::CURLINFO) -> Result<*const c_char, Error> {
+        unsafe {
+            let mut p = std::ptr::null();
+            let rc = curl::curl_easy_getinfo(self.inner.handle, opt, &mut p);
+            self.cvt(rc)?;
+            Ok(p)
+        }
+    }
+
+    fn getopt_str(&self, opt: curl::CURLINFO) -> Result<Option<&str>, Error> {
+        match self.getopt_bytes(opt) {
+            Ok(None) => Ok(None),
+            Err(e) => Err(e),
+            Ok(Some(bytes)) => match std::str::from_utf8(bytes) {
+                Ok(s) => Ok(Some(s)),
+                Err(_) => Err(Error::new(curl::CURLE_CONV_FAILED)),
+            },
+        }
+    }
+
+    fn getopt_long(&self, opt: curl::CURLINFO) -> Result<c_long, Error> {
+        unsafe {
+            let mut p = 0;
+            let rc = curl::curl_easy_getinfo(self.inner.handle, opt, &mut p);
+            self.cvt(rc)?;
+            Ok(p)
+        }
+    }
+
+    fn getopt_double(&self, opt: curl::CURLINFO) -> Result<c_double, Error> {
+        unsafe {
+            let mut p = 0 as c_double;
+            let rc = curl::curl_easy_getinfo(self.inner.handle, opt, &mut p);
+            self.cvt(rc)?;
+            Ok(p)
+        }
+    }
+
+    fn resolve(&mut self, list: List) -> Result<(), Error> {
+        let ptr = list::raw(&list);
+        self.inner.resolve_list = Some(list);
+        self.setopt_ptr(curl::CURLOPT_RESOLVE, ptr as *const _)
+    }
+
     fn version(&self) -> Result<&'static str, std::str::Utf8Error> {
         let char_ptr = unsafe { curl::curl_version() };
         let c_str = unsafe { CStr::from_ptr(char_ptr) };
         c_str.to_str()
+    }
+
+    fn response_code(&self) -> Result<u32, Error> {
+        self.getopt_long(curl::CURLINFO_RESPONSE_CODE).map(|c| c as u32)
+    }
+
+    fn effective_url(&self) -> Result<Option<&str>, Error> {
+        self.getopt_str(curl::CURLINFO_EFFECTIVE_URL)
     }
 
     fn take_error_buf(&self) -> Option<String> {
@@ -305,45 +294,21 @@ impl<H: Handler> Client<H> {
     }
 }
 
-fn send_request(url: &str, options: &Options) -> Result<(), Error> {
-    let headers = CString::new("Accept: */*").expect("expected CString to be valid");
+fn send_request(url: &str, options: &mut Options) -> Result<(), Error> {
+    let mut headers = List::new();
     let mut client = Client::new(Collector(Vec::new()));
 
-    client.setopt_string(CURLOPT_URL, url)?;
+    headers.append("Accept: */*")?;
+
+    client.setopt_string(curl::CURLOPT_URL, url)?;
 
     if let Some(ref data) = options.data {
-        client.setopt_string(CURLOPT_POSTFIELDS, data)?;
+        client.setopt_string(curl::CURLOPT_POSTFIELDS, data)?;
     }
 
     if options.include_headers {
-        client.setopt_long(CURLOPT_HEADER, 1)?;
+        client.setopt_long(curl::CURLOPT_HEADER, 1)?;
     }
-
-    // let result = curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callbac2 as *const c_void);
-    // if result != CURLE_OK {
-    //     curl_easy_cleanup(handle);
-    //     return Err(CurlError::OptionError(result));
-    // }
-
-    // let result = curl_easy_setopt(handle, CURLOPT_WRITEDATA, &mut response_data as *mut _ as *mut c_void);
-    // if result != CURLE_OK {
-    //     curl_easy_cleanup(handle);
-    //     return Err(CurlError::OptionError(result));
-    // }
-
-    // if let Some(ref output) = options.output {
-    //     let mut file = std::fs::File::create(output)?;
-    //     unsafe {
-    //         let file_ptr = &mut file as *mut _ as *mut c_void;
-    //         curl_easy_setopt(handle, CURLOPT_WRITEDATA, file_ptr);
-    //         curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback as *const c_void);
-    //     }
-    // } else {
-    //     unsafe {
-    //         curl_easy_setopt(handle, CURLOPT_WRITEDATA, std::ptr::null_mut::<c_void>());
-    //         curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stdout_callback as *const c_void);
-    //     }
-    // }
 
     // if let Some(ref upload_file) = options.upload_file {
     //     set_curl_option(handle, CURLOPT_UPLOAD, b"1")?;
@@ -355,12 +320,8 @@ fn send_request(url: &str, options: &Options) -> Result<(), Error> {
     //     }
     // }
 
-    if options.remote_name {
-        unimplemented!(); // handle writing to file with remote name
-    }
-
     if let Some(ref user) = options.user {
-        client.setopt_string(CURLOPT_USERPWD, user)?;
+        client.setopt_string(curl::CURLOPT_USERPWD, user)?;
     }
 
     if let Some(ref user_agent) = options.user_agent {
@@ -377,26 +338,36 @@ fn send_request(url: &str, options: &Options) -> Result<(), Error> {
         client.useragent(&user_agent)?;
     }
 
-    client.setopt_long(CURLOPT_SSL_VERIFYPEER, 1)?;
-    client.setopt_long(CURLOPT_SSL_VERIFYHOST, 2)?;
+    client.setopt_long(curl::CURLOPT_SSL_VERIFYPEER, 1)?;
+    client.setopt_long(curl::CURLOPT_SSL_VERIFYHOST, 2)?;
 
     if options.verbose {
-        client.setopt_long(CURLOPT_VERBOSE, 1)?;
+        client.setopt_long(curl::CURLOPT_VERBOSE, 1)?;
     }
 
-    // curl_option! { handle => (CURLOPT_HTTPHEADER, headers.as_bytes()) };
-
-    client.setopt_long(CURLOPT_FOLLOWLOCATION, 2)?;
-    client.setopt_long(CURLOPT_MAXREDIRS, 5)?;
-    client.setopt_long(CURLOPT_CONNECTTIMEOUT, 30)?;
+    client.setopt_long(curl::CURLOPT_FOLLOWLOCATION, 2)?;
+    client.setopt_long(curl::CURLOPT_MAXREDIRS, 5)?;
+    client.setopt_long(curl::CURLOPT_CONNECTTIMEOUT, 30)?;
 
     if let Ok(proxy) = std::env::var("HTTP_PROXY") {
-        client.setopt_string(CURLOPT_PROXY, &proxy)?;
+        client.setopt_string(curl::CURLOPT_PROXY, &proxy)?;
     }
 
+    client.headers(headers)?;
     client.perform()?;
 
-    Ok(io::stdout().write_all(&client.inner.handler.result())?)
+    let result = &client.inner.handler.result();
+
+    if options.remote_name {
+        options.output = client.effective_url()?.and_then(|url| url.rsplit('/').next().map(str::to_owned));
+    }
+
+    if let Some(ref output) = options.output {
+        let mut file = std::fs::File::create(output)?;
+        return Ok(file.write_all(result)?);
+    }
+
+    Ok(io::stdout().write_all(result)?)
 }
 
 extern "C" fn header_cb<H: Handler>(buffer: *mut c_char, size: size_t, nitems: size_t, userptr: *mut c_void) -> size_t {
@@ -488,7 +459,10 @@ fn entry() -> ! {
             d => options.data = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'd'"))).into_owned()),
             f => options.fail_fast = true,
             i => options.include_headers = true,
-            o => options.output = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'o'"))).into_owned()),
+            o => options.output = {
+                args.next();
+                Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'o'"))).into_owned())
+            },
             O => options.remote_name = true,
             v => options.verbose = true,
             T => options.upload_file = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'T'"))).into_owned()),
@@ -503,7 +477,7 @@ fn entry() -> ! {
         usage!("curl: missing URL");
     }
 
-    if let Err(e) = send_request(&url, &options) {
+    if let Err(e) = send_request(&url, &mut options) {
         if options.fail_fast {
             std::process::exit(1);
         } else {

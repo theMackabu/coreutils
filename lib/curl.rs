@@ -481,19 +481,10 @@ pub const CURLOPT_CLOSESOCKETFUNCTION: CURLoption = CURLOPTTYPE_FUNCTIONPOINT + 
 pub const CURLOPT_CLOSESOCKETDATA: CURLoption = CURLOPTTYPE_OBJECTPOINT + 209;
 pub const CURLOPT_GSSAPI_DELEGATION: CURLoption = CURLOPTTYPE_LONG + 210;
 pub const CURLOPT_DNS_SERVERS: CURLoption = CURLOPTTYPE_OBJECTPOINT + 211;
-// pub const CURLOPT_ACCEPTTIMEOUT_MS: CURLoption = CURLOPTTYPE_LONG + 212;
 pub const CURLOPT_TCP_KEEPALIVE: CURLoption = CURLOPTTYPE_LONG + 213;
 pub const CURLOPT_TCP_KEEPIDLE: CURLoption = CURLOPTTYPE_LONG + 214;
 pub const CURLOPT_TCP_KEEPINTVL: CURLoption = CURLOPTTYPE_LONG + 215;
 pub const CURLOPT_SSL_OPTIONS: CURLoption = CURLOPTTYPE_LONG + 216;
-// pub const CURLOPT_MAIL_AUTH: CURLoption = CURLOPTTYPE_OBJECTPOINT + 217;
-// pub const CURLOPT_SASL_IR: CURLoption = CURLOPTTYPE_LONG + 218;
-// pub const CURLOPT_XFERINFOFUNCTION: CURLoption = CURLOPTTYPE_FUNCTIONPOINT + 219;
-// pub const CURLOPT_XOAUTH2_BEARER: CURLoption = CURLOPTTYPE_OBJECTPOINT + 220;
-// pub const CURLOPT_DNS_INTERFACE: CURLoption = CURLOPTTYPE_OBJECTPOINT + 221;
-// pub const CURLOPT_DNS_LOCAL_IP4: CURLoption = CURLOPTTYPE_OBJECTPOINT + 222;
-// pub const CURLOPT_DNS_LOCAL_IP6: CURLoption = CURLOPTTYPE_OBJECTPOINT + 223;
-// pub const CURLOPT_LOGIN_OPTIONS: CURLoption = CURLOPTTYPE_OBJECTPOINT + 224;
 pub const CURLOPT_EXPECT_100_TIMEOUT_MS: CURLoption = CURLOPTTYPE_LONG + 227;
 pub const CURLOPT_PINNEDPUBLICKEY: CURLoption = CURLOPTTYPE_OBJECTPOINT + 230;
 pub const CURLOPT_UNIX_SOCKET_PATH: CURLoption = CURLOPTTYPE_OBJECTPOINT + 231;
@@ -515,14 +506,10 @@ pub const CURLOPT_PROXY_CRLFILE: CURLoption = CURLOPTTYPE_OBJECTPOINT + 260;
 pub const CURLOPT_PROXY_SSL_OPTIONS: CURLoption = CURLOPTTYPE_LONG + 261;
 
 pub const CURLOPT_ABSTRACT_UNIX_SOCKET: CURLoption = CURLOPTTYPE_OBJECTPOINT + 264;
-
 pub const CURLOPT_DOH_URL: CURLoption = CURLOPTTYPE_OBJECTPOINT + 279;
 pub const CURLOPT_UPLOAD_BUFFERSIZE: CURLoption = CURLOPTTYPE_LONG + 280;
-
 pub const CURLOPT_HTTP09_ALLOWED: CURLoption = CURLOPTTYPE_LONG + 285;
-
 pub const CURLOPT_MAXAGE_CONN: CURLoption = CURLOPTTYPE_LONG + 288;
-
 pub const CURLOPT_SSLCERT_BLOB: CURLoption = CURLOPTTYPE_BLOB + 291;
 pub const CURLOPT_SSLKEY_BLOB: CURLoption = CURLOPTTYPE_BLOB + 292;
 pub const CURLOPT_PROXY_SSLCERT_BLOB: CURLoption = CURLOPTTYPE_BLOB + 293;
@@ -531,7 +518,6 @@ pub const CURLOPT_ISSUERCERT_BLOB: CURLoption = CURLOPTTYPE_BLOB + 295;
 
 pub const CURLOPT_PROXY_ISSUERCERT: CURLoption = CURLOPTTYPE_OBJECTPOINT + 296;
 pub const CURLOPT_PROXY_ISSUERCERT_BLOB: CURLoption = CURLOPTTYPE_BLOB + 297;
-
 pub const CURLOPT_AWS_SIGV4: CURLoption = CURLOPTTYPE_OBJECTPOINT + 305;
 
 pub const CURLOPT_DOH_SSL_VERIFYPEER: CURLoption = CURLOPTTYPE_LONG + 306;
@@ -961,86 +947,140 @@ extern "C" {
     pub fn curl_multi_assign(multi_handle: *mut CURLM, sockfd: curl_socket_t, sockp: *mut c_void) -> CURLMcode;
 }
 
-pub struct List {
-    raw: *mut curl_slist,
+pub enum WriteError {
+    Pause,
 }
 
-#[derive(Clone)]
-pub struct Iter<'a> {
-    _me: &'a List,
-    cur: *mut curl_slist,
+pub enum ReadError {
+    Abort,
+    Pause,
 }
 
-pub fn raw(list: &List) -> *mut curl_slist {
-    list.raw
+#[derive(Clone, Copy)]
+pub enum SeekResult {
+    Ok = CURL_SEEKFUNC_OK as isize,
+    Fail = CURL_SEEKFUNC_FAIL as isize,
+    CantSeek = CURL_SEEKFUNC_CANTSEEK as isize,
 }
 
-pub unsafe fn from_raw(raw: *mut curl_slist) -> List {
-    List { raw }
-}
-
-unsafe impl Send for List {}
-
-impl List {
-    pub fn new() -> List {
-        List { raw: ptr::null_mut() }
+pub trait Handler {
+    fn result(&self) -> Vec<u8> {
+        Vec::new()
     }
 
-    pub fn append(&mut self, data: &str) -> Result<(), Error> {
-        let data = CString::new(data)?;
-        unsafe {
-            let raw = curl_slist_append(self.raw, data.as_ptr());
-            assert!(!raw.is_null());
-            self.raw = raw;
-            Ok(())
+    fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
+        Ok(data.len())
+    }
+
+    fn read(&mut self, data: &mut [u8]) -> Result<usize, ReadError> {
+        let _ = data;
+        Ok(0)
+    }
+
+    fn seek(&mut self, whence: io::SeekFrom) -> SeekResult {
+        let _ = whence;
+        SeekResult::CantSeek
+    }
+
+    fn header(&mut self, data: &[u8]) -> bool {
+        let _ = data;
+        true
+    }
+
+    fn progress(&mut self, dltotal: f64, dlnow: f64, ultotal: f64, ulnow: f64) -> bool {
+        let _ = (dltotal, dlnow, ultotal, ulnow);
+        true
+    }
+
+    fn ssl_ctx(&mut self, _cx: *mut c_void) -> Result<(), Error> {
+        Ok(())
+    }
+}
+
+pub mod list {
+    use super::*;
+
+    pub struct List {
+        raw: *mut curl_slist,
+    }
+
+    #[derive(Clone)]
+    pub struct Iter<'a> {
+        _me: &'a List,
+        cur: *mut curl_slist,
+    }
+
+    pub fn raw(list: &List) -> *mut curl_slist {
+        list.raw
+    }
+
+    pub unsafe fn from_raw(raw: *mut curl_slist) -> List {
+        List { raw }
+    }
+
+    unsafe impl Send for List {}
+
+    impl List {
+        pub fn new() -> List {
+            List { raw: ptr::null_mut() }
+        }
+
+        pub fn append(&mut self, data: &str) -> Result<(), Error> {
+            let data = CString::new(data)?;
+            unsafe {
+                let raw = curl_slist_append(self.raw, data.as_ptr());
+                assert!(!raw.is_null());
+                self.raw = raw;
+                Ok(())
+            }
+        }
+
+        pub fn iter(&self) -> Iter {
+            Iter { _me: self, cur: self.raw }
         }
     }
 
-    pub fn iter(&self) -> Iter {
-        Iter { _me: self, cur: self.raw }
-    }
-}
-
-impl fmt::Debug for List {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_list().entries(self.iter().map(String::from_utf8_lossy)).finish()
-    }
-}
-
-impl<'a> IntoIterator for &'a List {
-    type IntoIter = Iter<'a>;
-    type Item = &'a [u8];
-
-    fn into_iter(self) -> Iter<'a> {
-        self.iter()
-    }
-}
-
-impl Drop for List {
-    fn drop(&mut self) {
-        unsafe { curl_slist_free_all(self.raw) }
-    }
-}
-
-impl<'a> Iterator for Iter<'a> {
-    type Item = &'a [u8];
-
-    fn next(&mut self) -> Option<&'a [u8]> {
-        if self.cur.is_null() {
-            return None;
-        }
-
-        unsafe {
-            let ret = Some(CStr::from_ptr((*self.cur).data).to_bytes());
-            self.cur = (*self.cur).next;
-            ret
+    impl fmt::Debug for List {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.debug_list().entries(self.iter().map(String::from_utf8_lossy)).finish()
         }
     }
-}
 
-impl<'a> fmt::Debug for Iter<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_list().entries(self.clone().map(String::from_utf8_lossy)).finish()
+    impl<'a> IntoIterator for &'a List {
+        type IntoIter = Iter<'a>;
+        type Item = &'a [u8];
+
+        fn into_iter(self) -> Iter<'a> {
+            self.iter()
+        }
+    }
+
+    impl Drop for List {
+        fn drop(&mut self) {
+            unsafe { curl_slist_free_all(self.raw) }
+        }
+    }
+
+    impl<'a> Iterator for Iter<'a> {
+        type Item = &'a [u8];
+
+        fn next(&mut self) -> Option<&'a [u8]> {
+            if self.cur.is_null() {
+                return None;
+            }
+
+            unsafe {
+                let ret = Some(CStr::from_ptr((*self.cur).data).to_bytes());
+                self.cur = (*self.cur).next;
+                ret
+            }
+        }
+    }
+
+    impl<'a> fmt::Debug for Iter<'a> {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.debug_list().entries(self.clone().map(String::from_utf8_lossy)).finish()
+        }
     }
 }
 
