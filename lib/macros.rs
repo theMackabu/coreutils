@@ -14,6 +14,24 @@ macro_rules! module {
 }
 
 #[macro_export]
+macro_rules! utf8_n {
+    ($opt:expr, $default:expr) => {
+        String::from_utf8_lossy($opt.next().unwrap_or($default.as_bytes())).into_owned()
+    };
+    ($opt:expr, err: $err:expr) => {
+        String::from_utf8_lossy(&$opt.next().unwrap_or_else(|| $err)).into_owned()
+    };
+    (skip->$opt:expr, $default:expr) => {{
+        $opt.next();
+        String::from_utf8_lossy($opt.next().unwrap_or($default.as_bytes())).into_owned()
+    }};
+    (skip->$opt:expr, err: $err:expr) => {{
+        $opt.next();
+        String::from_utf8_lossy(&$opt.next().unwrap_or_else(|| $err)).into_owned()
+    }};
+}
+
+#[macro_export]
 macro_rules! stdout {
     ($($arg:tt)*) => {{
         println!($($arg)*);

@@ -11,11 +11,11 @@ extern crate entry;
 extern crate prelude;
 
 use prelude::*;
-use std::cell::RefCell;
 use std::ffi::{CStr, CString};
-use std::io::{Read, SeekFrom, Write};
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::os::raw::{c_char, c_double, c_int, c_long, c_void};
-use std::{path::Path, slice};
+use std::sync::{Arc, Mutex};
+use std::{cell::RefCell, fs::File, path::Path, slice};
 
 use self::curl::{
     list::{self, List},
@@ -23,15 +23,16 @@ use self::curl::{
 };
 
 const USAGE: &str = "Usage: curl [options...] <url>
- -d, --data <data>           HTTP POST data
- -f, --fail                  Fail fast with no output on HTTP errors
- -i, --include               Include response headers in output
- -o, --output <file>         Write to file instead of stdout
- -O, --remote-name           Write output to file named as remote file
- -v, --verbose               Verbose mode
- -T, --upload-file <file>    Transfer local FILE to destination
- -u, --user <user:password>  Server user and password
- -A, --user-agent <name>     Send User-Agent <name> to server";
+ -d <data> [plain|form|json]   HTTP POST data
+ -f                            Fail fast with no output on HTTP errors
+ -i                            Include response headers in output
+ -h <headers...>               Pass custom header(s) to server
+ -o <file>                     Write to file instead of stdout
+ -O                            Write output to file named as remote file
+ -v                            Verbose mode
+ -T <file>                     Transfer local FILE to destination
+ -u <user:password>            Server user and password
+ -A <name>                     Send User-Agent <name> to server";
 
 pub const DESCRIPTION: &str = "Transfer data from or to a server";
 
@@ -48,10 +49,16 @@ impl Handler for Collector {
     }
 }
 
+struct Data {
+    mime: String,
+    body: String,
+}
+
 struct Options {
-    data: Option<String>,
+    data: Option<Data>,
     fail_fast: bool,
     include_headers: bool,
+    headers: Option<Vec<String>>,
     output: Option<String>,
     remote_name: bool,
     verbose: bool,
@@ -257,6 +264,14 @@ impl<H: Handler> Client<H> {
         c_str.to_str()
     }
 
+    fn upload(&mut self, enable: bool) -> Result<(), Error> {
+        self.setopt_long(curl::CURLOPT_UPLOAD, enable as c_long)
+    }
+
+    fn upload_buffer_size(&mut self, size: usize) -> Result<(), Error> {
+        self.setopt_long(curl::CURLOPT_UPLOAD_BUFFERSIZE, size as c_long)
+    }
+
     fn response_code(&self) -> Result<u32, Error> {
         self.getopt_long(curl::CURLINFO_RESPONSE_CODE).map(|c| c as u32)
     }
@@ -274,6 +289,39 @@ impl<H: Handler> Client<H> {
         let msg = String::from_utf8_lossy(&buf[..pos]).into_owned();
         buf[0] = 0;
         Some(msg)
+    }
+
+    fn post(&mut self, enable: bool) -> Result<(), Error> {
+        self.setopt_long(curl::CURLOPT_POST, enable as c_long)?;
+        self.setopt_long(curl::CURLOPT_HTTPGET, !enable as c_long)
+    }
+
+    fn post_fields_copy(&mut self, data: &[u8]) -> Result<(), Error> {
+        self.post_field_size(data.len() as u64)?;
+        self.setopt_ptr(curl::CURLOPT_COPYPOSTFIELDS, data.as_ptr() as *const _)
+    }
+
+    fn post_field_size(&mut self, size: u64) -> Result<(), Error> {
+        self.setopt_ptr(curl::CURLOPT_POSTFIELDS, std::ptr::null())?;
+        self.setopt_off_t(curl::CURLOPT_POSTFIELDSIZE_LARGE, size as curl::curl_off_t)
+    }
+
+    fn set_read_function<F>(&mut self, read_fn: F) -> Result<(), Error>
+    where
+        F: FnMut(&mut [u8]) -> Result<usize, ReadError> + 'static,
+    {
+        let read_fn = Box::new(read_fn);
+        self.setopt_ptr(curl::CURLOPT_READFUNCTION, read_callback::<F> as *const _)?;
+        self.setopt_ptr(curl::CURLOPT_READDATA, Box::into_raw(Box::new(read_fn)) as *mut _)
+    }
+
+    fn set_seek_function<F>(&mut self, seek_fn: F) -> Result<(), Error>
+    where
+        F: FnMut(SeekFrom) -> Result<(), Error> + Send + 'static,
+    {
+        let seek_fn = Box::new(seek_fn);
+        self.setopt_ptr(curl::CURLOPT_SEEKFUNCTION, seek_callback::<F> as *const _)?;
+        self.setopt_ptr(curl::CURLOPT_SEEKDATA, Box::into_raw(Box::new(seek_fn)) as *mut _)
     }
 
     fn cvt(&self, rc: curl::CURLcode) -> Result<(), Error> {
@@ -303,22 +351,55 @@ fn send_request(url: &str, options: &mut Options) -> Result<(), Error> {
     client.setopt_string(curl::CURLOPT_URL, url)?;
 
     if let Some(ref data) = options.data {
-        client.setopt_string(curl::CURLOPT_POSTFIELDS, data)?;
+        match data.mime.as_str() {
+            "json" => headers.append("Content-Type: application/json; charset=utf-8")?,
+            "form" => headers.append("Content-Type: application/x-www-form-urlencoded")?,
+            _ => headers.append("Content-Type: text/plain; charset=utf-8")?,
+        }
+
+        client.post(true)?;
+        client.post_fields_copy(data.body.as_bytes())?;
+    }
+
+    if let Some(ref header_list) = options.headers {
+        options.include_headers = true;
+
+        for header in header_list {
+            headers.append(header)?;
+        }
     }
 
     if options.include_headers {
         client.setopt_long(curl::CURLOPT_HEADER, 1)?;
     }
 
-    // if let Some(ref upload_file) = options.upload_file {
-    //     set_curl_option(handle, CURLOPT_UPLOAD, b"1")?;
-    //     let mut file = std::fs::File::open(upload_file)?;
-    //     unsafe {
-    //         let file_ptr = &mut file as *mut _ as *mut c_void;
-    //         curl_easy_setopt(handle, CURLOPT_READDATA, file_ptr);
-    //         curl_easy_setopt(handle, CURLOPT_READFUNCTION, read_callback as *const c_void);
-    //     }
-    // }
+    if let Some(ref upload_file) = options.upload_file {
+        let file = File::open(upload_file)?;
+        let file_size = file.metadata()?.len();
+        let file = Arc::new(Mutex::new(file));
+
+        client.upload(true)?;
+        client.upload_buffer_size(file_size as usize)?;
+
+        let file_clone = Arc::clone(&file);
+        let reader = move |buf: &mut [u8]| {
+            let mut file = file_clone.lock().unwrap();
+            match file.read(buf) {
+                Ok(bytes_read) => Ok(bytes_read),
+                Err(_) => Err(ReadError::Pause),
+            }
+        };
+
+        let file_clone = Arc::clone(&file);
+        let seeker = move |pos: SeekFrom| {
+            let mut file = file_clone.lock().unwrap();
+            file.seek(pos).map(|_| ()).map_err(|_| Error::new(curl::CURLE_SEND_FAIL_REWIND))
+        };
+
+        client.set_read_function(reader)?;
+        client.set_seek_function(seeker)?;
+        client.setopt_long(curl::CURLOPT_PUT, 1)?;
+    }
 
     if let Some(ref user) = options.user {
         client.setopt_string(curl::CURLOPT_USERPWD, user)?;
@@ -437,11 +518,45 @@ extern "C" fn ssl_ctx_cb<H: Handler>(_handle: *mut curl::CURL, ssl_ctx: *mut c_v
     res.unwrap_or(curl::CURLE_SSL_CONNECT_ERROR)
 }
 
+extern "C" fn read_callback<F>(ptr: *mut c_char, size: size_t, nmemb: size_t, userdata: *mut c_void) -> size_t
+where
+    F: FnMut(&mut [u8]) -> Result<usize, ReadError>,
+{
+    let total_size = size * nmemb;
+    let buf = unsafe { std::slice::from_raw_parts_mut(ptr as *mut u8, total_size) };
+    let read_fn = unsafe { &mut *(userdata as *mut F) };
+
+    match read_fn(buf) {
+        Ok(n) => n,
+        Err(ReadError::Pause) => curl::CURL_READFUNC_PAUSE,
+        Err(ReadError::Abort) => curl::CURL_READFUNC_ABORT,
+    }
+}
+
+extern "C" fn seek_callback<F>(userdata: *mut c_void, offset: curl::curl_off_t, origin: c_int) -> c_int
+where
+    F: FnMut(SeekFrom) -> Result<(), Error>,
+{
+    let seek_fn = unsafe { &mut *(userdata as *mut F) };
+    let whence = match origin {
+        0 => SeekFrom::Start(offset as u64),
+        1 => SeekFrom::Current(offset),
+        2 => SeekFrom::End(offset),
+        _ => return 2, // CURL_SEEKFUNC_CANTSEEK
+    };
+
+    match seek_fn(whence) {
+        Ok(()) => 0, // CURL_SEEKFUNC_OK
+        Err(_) => 1, // CURL_SEEKFUNC_FAIL
+    }
+}
+
 #[entry::gen(cfg = ["bin", "mut"])]
 fn entry() -> ! {
     let mut options = Options {
         data: None,
         fail_fast: false,
+        headers: None,
         include_headers: false,
         output: None,
         remote_name: false,
@@ -456,18 +571,29 @@ fn entry() -> ! {
     argument! {
         args: args.to_owned(),
         options: {
-            d => options.data = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'd'"))).into_owned()),
+            v => options.verbose = true,
             f => options.fail_fast = true,
             i => options.include_headers = true,
-            o => options.output = {
-                args.next();
-                Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'o'"))).into_owned())
-            },
             O => options.remote_name = true,
-            v => options.verbose = true,
-            T => options.upload_file = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'T'"))).into_owned()),
-            u => options.user = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'u'"))).into_owned()),
-            A => options.user_agent = Some(String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("curl: option requires an argument -- 'A'"))).into_owned())
+
+            o => options.output = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'o'"))),
+            T => options.upload_file = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'T'"))),
+            u => options.user = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'u'"))),
+            A => options.user_agent = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'A'"))),
+
+            h => {
+                let header_list = utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'h'"));
+                let headers = header_list.split(',').map(|s| s.trim().to_owned()).collect::<Vec<_>>();
+
+                options.headers = Some(headers)
+            },
+
+            d => {
+                let body = utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'd'"));
+                let mime = utf8_n!(args, "plain");
+
+                options.data =  Some(Data { mime, body });
+            }
         },
         command: |arg| url = String::from_utf8_lossy(arg).into_owned(),
         on_invalid: |arg| usage!("curl: invalid option -- '{}'", arg as char)
@@ -477,11 +603,11 @@ fn entry() -> ! {
         usage!("curl: missing URL");
     }
 
-    if let Err(e) = send_request(&url, &mut options) {
+    if let Err(err) = send_request(&url, &mut options) {
         if options.fail_fast {
             std::process::exit(1);
         } else {
-            error!("curl: request failed: {}", e);
+            error!("curl: request failed: {}", err);
         }
     }
 }
