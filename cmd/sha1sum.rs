@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::io::{self, Read};
 
 const SHA1DLEN: usize = 20;
@@ -158,7 +151,7 @@ fn sum(mut reader: impl Read, name: Option<&str>) -> io::Result<()> {
     Ok(())
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
 

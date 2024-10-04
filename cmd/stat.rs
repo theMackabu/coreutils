@@ -1,16 +1,9 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate date;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
-use stat::date::DateTime;
+use self::date::DateTime;
 use std::os::unix::fs::MetadataExt;
 use std::time::{Duration, UNIX_EPOCH};
 
@@ -56,7 +49,7 @@ fn format_time(seconds: i64) -> String {
     dt.format("%a %b %d %H:%M:%S %Y")
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
 

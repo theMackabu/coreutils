@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 
 const USAGE: &str = "usage: mv [-f | -i | -n] [-v] source... destination";
 pub const DESCRIPTION: &str = "Move (rename) files";
@@ -58,7 +50,7 @@ fn mv(source: &Path, destination: &Path, options: &MvOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut options = MvOptions::new();
     let mut sources = Vec::new();

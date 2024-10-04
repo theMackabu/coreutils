@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::io::{self, Read, Write};
 
 const USAGE: &str = "usage: base64 <string> [-d] [-i] [-o output_file] [file]";
@@ -80,7 +72,7 @@ fn decode_base64<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<
     Ok(())
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut decode = false;
     let mut input_file = None;

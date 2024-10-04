@@ -1,20 +1,14 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 extern crate env;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 use std::{collections::HashMap, str::from_utf8};
 
 const USAGE: &str = "usage: env [-i] [NAME=VALUE]... [COMMAND [ARG]...]";
 pub const DESCRIPTION: &str = "Set the environment for command invocation";
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let env = env::vars().into_iter();
 

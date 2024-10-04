@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::os::unix::fs::MetadataExt;
 
 const USAGE: &str = "usage: du [-ahsH] [file ...]";
@@ -63,7 +55,7 @@ fn du(path: &Path, options: &DuOptions) -> Result<u64, Box<dyn Error>> {
     Ok(total_size)
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut paths = Vec::new();
 

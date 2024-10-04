@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 
 const USAGE: &str = "usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file";
 pub const DESCRIPTION: &str = "Copy files and directories";
@@ -79,7 +71,7 @@ fn cp(source: &Path, destination: &Path, options: &CpOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut options = CpOptions::new();
     let mut sources = Vec::new();

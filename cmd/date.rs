@@ -1,20 +1,14 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate date;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use date::date::DateTime;
+use self::date::DateTime;
 
 const USAGE: &str = "usage: date -u [+FORMAT]";
 pub const DESCRIPTION: &str = "Print or set the system date and time";
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut now = DateTime::now(false);
     let mut format = String::from("%a %b %r %H:%M:%S %Z %Y");

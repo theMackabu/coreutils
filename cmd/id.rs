@@ -1,15 +1,9 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 extern crate uid;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use id::uid::*;
+use self::uid::*;
 use std::io;
 
 const USAGE: &str = "usage: id [-u] [-g] [-G] [-n] [user]";
@@ -57,7 +51,7 @@ fn print_id(options: &IdOptions, username: Option<&str>, group: Option<&str>) ->
     Ok(())
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut username = None;
     let mut group = None;

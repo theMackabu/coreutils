@@ -1,8 +1,6 @@
-#![feature(start)]
+#![feature(start, rustc_private)]
 #![allow(clashing_extern_declarations)]
 
-#[macro_use]
-extern crate macros;
 extern crate entry;
 extern crate prelude;
 
@@ -13,7 +11,7 @@ module! {
     tail, touch, tty, uname, wc, who,
     whoami, yes, chmod, date, mk, chown,
     base64, hostid, df, cksum, chroot, http,
-    curl, sha1sum, time
+    curl, sha1sum, time, kill
 }
 
 use prelude::Tap;
@@ -44,7 +42,7 @@ fn generate_usage() -> String {
     format!("usage: core <command> [arguments...]\n\nAvailable commands:\n{}", available_commands)
 }
 
-#[entry::gen]
+#[entry::gen("no_prelude")]
 fn entry() -> ! {
     let path = Path::new(OsStr::from_bytes(program));
     let program = path.file_name().map(|s| s.as_bytes()).unwrap_or(b"core");

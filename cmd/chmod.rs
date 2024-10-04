@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::fmt;
 use std::os::unix::fs::PermissionsExt;
 
@@ -100,7 +93,7 @@ fn chmod_recursive(path: &Path, mode: &str, options: &ChmodOptions) -> io::Resul
     Ok(())
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut options = ChmodOptions {
         force: false,

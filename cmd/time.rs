@@ -1,12 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 use std::process::Command;
 use std::time::Instant;
@@ -51,7 +45,7 @@ fn timeval_to_seconds(tv: &Timeval) -> f64 {
     tv.tv_sec as f64 + tv.tv_usec as f64 * 1e-6
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let args = args.map(|a| String::from_utf8_lossy(a).to_string()).collect::<Vec<_>>();
 

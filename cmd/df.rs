@@ -1,15 +1,7 @@
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::ffi::{c_int, CStr};
 
 #[cfg(target_os = "linux")]
@@ -155,7 +147,7 @@ fn print_df(mntent: &libc::mntent, use_512_blocks: bool) -> io::Result<()> {
     Ok(())
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin")]
 fn entry() -> ! {
     let mut use_512_blocks = true;
 
@@ -176,14 +168,14 @@ fn entry() -> ! {
     #[cfg(target_os = "macos")]
     {
         let mut fs_info: *mut Statfs = std::ptr::null_mut();
-        let fs_count = unsafe { getmntinfo(&mut fs_info, 0) };
+        let fs_count = getmntinfo(&mut fs_info, 0);
 
         if fs_count <= 0 {
             error!("df: Failed to get filesystem information");
         }
 
         for i in 0..fs_count {
-            let statfs_buf = unsafe { &*fs_info.offset(i as isize) };
+            let statfs_buf = &*fs_info.offset(i as isize);
             if let Err(e) = print_df(statfs_buf, use_512_blocks) {
                 error!("df: Failed to print filesystem information: {}", e);
             }
@@ -194,18 +186,18 @@ fn entry() -> ! {
     {
         let mtab = CString::new("/etc/mtab").unwrap();
         let mode = CString::new("r").unwrap();
-        let file = unsafe { setmntent(mtab.as_ptr(), mode.as_ptr()) };
+        let file = setmntent(mtab.as_ptr(), mode.as_ptr());
 
         if file.is_null() {
             error!("df: Failed to open /etc/mtab");
         }
 
         loop {
-            let ent = unsafe { getmntent(file) };
+            let ent = getmntent(file);
             if ent.is_null() {
                 break;
             }
-            let mntent = unsafe { &*ent };
+            let mntent = &*ent;
             if let Err(e) = print_df(mntent, use_512_blocks) {
                 error!("df: Failed to print filesystem information: {}", e);
             }

@@ -1,16 +1,9 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate date;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use ls::date::DateTime;
-use prelude::*;
+use self::date::DateTime;
 use std::{
     os::unix::fs::MetadataExt,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -195,7 +188,7 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
     Ok(())
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut paths = Vec::new();
 

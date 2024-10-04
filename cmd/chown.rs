@@ -1,19 +1,12 @@
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 extern crate env;
 extern crate uid;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use chown::env::{cvt, run_path_with_cstr};
-use chown::uid::*;
-use prelude::*;
+use self::env::{cvt, run_path_with_cstr};
+use self::uid::*;
 use std::ffi::{c_char, c_int};
 
 const USAGE: &str = "usage: chown [-h] OWNER[:GROUP] FILE...";
@@ -29,23 +22,23 @@ extern "C" {
     fn chown(path: *const c_char, uid: uid_t, gid: gid_t) -> c_int;
 }
 
-fn do_lchown<P: AsRef<Path>>(path: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
+unsafe fn do_lchown<P: AsRef<Path>>(path: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
     let path = path.as_ref();
     let uid = uid.unwrap_or(u32::MAX);
     let gid = gid.unwrap_or(u32::MAX);
 
-    run_path_with_cstr(path, &|path| cvt(unsafe { lchown(path.as_ptr(), uid as uid_t, gid as gid_t) }).map(|_| ()))
+    run_path_with_cstr(path, &|path| cvt(lchown(path.as_ptr(), uid as uid_t, gid as gid_t)).map(|_| ()))
 }
 
-fn do_chown<P: AsRef<Path>>(dir: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
+unsafe fn do_chown<P: AsRef<Path>>(dir: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
     let dir = dir.as_ref();
     let uid = uid.unwrap_or(u32::MAX);
     let gid = gid.unwrap_or(u32::MAX);
 
-    run_path_with_cstr(dir, &|dir| cvt(unsafe { chown(dir.as_ptr(), uid as uid_t, gid as gid_t) }).map(|_| ()))
+    run_path_with_cstr(dir, &|dir| cvt(chown(dir.as_ptr(), uid as uid_t, gid as gid_t)).map(|_| ()))
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin")]
 fn entry() -> ! {
     let mut no_dereference = false;
     let mut owner_group = None;
@@ -68,7 +61,7 @@ fn entry() -> ! {
 
     let binding = owner_group.to_owned().unwrap_or_else(|| usage!("chown: missing owner[:group]"));
 
-    let lbinding: &'static str = unsafe {
+    let lbinding: &'static str = {
         let ptr = binding.as_ptr();
         let len = binding.len();
         std::mem::forget(binding.to_owned());

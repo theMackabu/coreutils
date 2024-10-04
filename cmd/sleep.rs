@@ -1,12 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 use std::thread;
 use std::time::Duration;
@@ -38,7 +32,7 @@ fn parse_duration(s: &str) -> Result<Duration, Box<dyn std::error::Error>> {
     Ok(Duration::from_secs_f64(num_str.parse::<f64>()? * multiplier))
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut total_duration = Duration::new(0, 0);
 

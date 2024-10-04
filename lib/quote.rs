@@ -25,12 +25,25 @@ macro_rules! quote_inner {
         $output.extend(expanded);
         quote_inner!($output, $($rest)*);
     }};
-    ($output:ident, ? ( $var:ident: $($token:tt)+ ) $($rest:tt)*) => {
-        if $var {
+    ($output:ident, ? ($cond:expr => $($token:tt)+) $($rest:tt)*) => {
+        if $cond {
             quote_inner!($output, $($token)+ $($rest)*);
         } else {
             quote_inner!($output, $($rest)*);
         }
+    };
+    ($output:ident, unsafe { $($inner:tt)* } $($rest:tt)*) => {
+        $output.extend(std::iter::once(TokenTree::Ident(Ident::new("unsafe", proc_macro::Span::call_site()))));
+        let mut inner = TokenStream::new();
+        quote_inner!(inner, $($inner)*);
+        $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Brace, inner))));
+        quote_inner!($output, $($rest)*);
+    };
+    ($output:ident, { $($inner:tt)* } $($rest:tt)*) => {
+        let mut inner = TokenStream::new();
+        quote_inner!(inner, $($inner)*);
+        $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Brace, inner))));
+        quote_inner!($output, $($rest)*);
     };
     ($output:ident, ( $($inner:tt)+ ) $($rest:tt)*) => {
         let mut inner = TokenStream::new();
@@ -84,12 +97,6 @@ macro_rules! quote_inner {
         let mut inner = TokenStream::new();
         quote_inner!(inner, $($inner)*);
         $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Bracket, inner))));
-        quote_inner!($output, $($rest)*);
-    };
-    ($output:ident, { $($inner:tt)* } $($rest:tt)*) => {
-        let mut inner = TokenStream::new();
-        quote_inner!(inner, $($inner)*);
-        $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Brace, inner))));
         quote_inner!($output, $($rest)*);
     };
     ($output:ident,) => {};

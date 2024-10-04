@@ -1,12 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 use std::io::{self, Write};
 use std::str::from_utf8;
@@ -58,7 +52,7 @@ fn parse_format(fmt: &str, args: &[&str]) -> String {
     result
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut args: Vec<&str> = args.map(|arg| from_utf8(arg).unwrap_or("?")).collect();
 

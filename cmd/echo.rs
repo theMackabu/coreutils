@@ -1,17 +1,11 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 const USAGE: &str = "usage: echo [-n] [STRING]...";
 pub const DESCRIPTION: &str = "Display a line of text";
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut no_newline = false;
     let mut strings = Vec::new();

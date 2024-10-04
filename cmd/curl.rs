@@ -1,16 +1,9 @@
 #![allow(dead_code)]
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate curl;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::ffi::{CStr, CString};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::os::raw::{c_char, c_double, c_int, c_long, c_void};
@@ -551,7 +544,7 @@ where
     }
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut options = Options {
         data: None,

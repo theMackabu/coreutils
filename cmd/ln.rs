@@ -1,16 +1,9 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 extern crate env;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use ln::env::{cvt, run_path_with_cstr};
-use prelude::*;
+use self::env::{cvt, run_path_with_cstr};
 use std::ffi::{c_char, c_int};
 
 const USAGE: &str = "usage: ln [-s] [-f] TARGET LINK_NAME";
@@ -27,7 +20,7 @@ fn symbolic_link(original: &Path, link: &Path) -> io::Result<()> {
     })
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut symbolic = false;
     let mut force = false;

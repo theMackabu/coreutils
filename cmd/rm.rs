@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 
 const USAGE: &str = "usage: rm [-rf] file...";
 pub const DESCRIPTION: &str = "Remove files or directories";
@@ -35,7 +27,7 @@ fn remove_file(path: &Path, options: &RemoveOptions) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut options = RemoveOptions { recursive: false, force: false };
     let mut files = Vec::new();

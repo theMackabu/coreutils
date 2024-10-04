@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::time::Duration;
 
 const USAGE: &str = "usage: tail [-f] [-n lines] [FILE]";
@@ -44,7 +37,7 @@ fn live_tail<R: Read + BufRead>(mut reader: R, num_lines: usize) -> io::Result<(
     }
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut num_lines = 10;
     let mut file_path = None;

@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::{fs::exists, os::unix::fs::PermissionsExt};
 
 const DEFAULT_MODE: u32 = 0o0777;
@@ -61,7 +53,7 @@ impl<'d> Dir<'d> {
     }
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut mode = DEFAULT_MODE;
     let mut recursive = false;

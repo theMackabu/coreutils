@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 
 const USAGE: &str = "usage: wc [-clmw] [file ...]";
 pub const DESCRIPTION: &str = "Print newline, word, and byte counts for each file";
@@ -92,7 +84,7 @@ fn print_result(result: &CountResult, options: &WcOptions, file_name: Option<&st
     println!("{}", output.trim_end());
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
     let mut options = WcOptions {

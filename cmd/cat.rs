@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 
 const USAGE: &str = "usage: cat [-benstv] [file ...]";
 pub const DESCRIPTION: &str = "Concatenate and print files";
@@ -63,7 +55,7 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
     Ok(())
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
 

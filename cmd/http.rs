@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
@@ -55,7 +48,7 @@ fn send_request(host: &str, port: u16, path: &str) -> Result<String, Box<dyn Err
     Ok(response)
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let url = args.next().unwrap_or_else(|| usage!("http: missing URL"));
     let url = String::from_utf8_lossy(url).to_string();

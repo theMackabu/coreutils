@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const USAGE: &str = "usage: touch [-c] [-t time] files...";
@@ -46,7 +39,7 @@ impl<'f> File<'f> {
     }
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut no_create = false;
     let mut time = SystemTime::now();

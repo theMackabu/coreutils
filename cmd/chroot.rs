@@ -1,15 +1,8 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 extern crate env;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::ffi::{c_char, c_int, CString};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::process::CommandExt;
@@ -31,7 +24,7 @@ extern "C" {
     fn chroot(path: *const c_char) -> c_int;
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut")]
 fn entry() -> ! {
     let new_root = args.next().unwrap_or_else(|| usage!("chroot: missing operand"));
     let new_root = PathBuf::from(OsStr::from_bytes(new_root));
@@ -43,10 +36,8 @@ fn entry() -> ! {
         error!("chroot: invalid new root path");
     });
 
-    unsafe {
-        if chroot(new_root_cstr.as_ptr()) != 0 {
-            error!("chroot: failed to change root to {}: {}", new_root.display(), io::Error::last_os_error());
-        }
+    if chroot(new_root_cstr.as_ptr()) != 0 {
+        error!("chroot: failed to change root to {}: {}", new_root.display(), io::Error::last_os_error());
     }
 
     if std::env::set_current_dir("/").is_err() {

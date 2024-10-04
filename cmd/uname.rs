@@ -1,12 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 const USAGE: &str = "usage: uname [-asnrvmo]";
 pub const DESCRIPTION: &str = "Print system information";
@@ -128,7 +122,7 @@ fn get_sys_info() -> Result<SysInfo, Box<dyn std::error::Error>> {
     }
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut print_sysname = false;
     let mut print_nodename = false;

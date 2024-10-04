@@ -15,14 +15,30 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut is_mut = attr.to_string().contains("mut");
     let mut is_bin = attr.to_string().contains("bin");
+    let mut is_libc = attr.to_string().contains("libc");
     let mut is_ret = !attr.to_string().contains("no_ret");
     let mut is_iter = !attr.to_string().contains("no_iter");
+    let mut is_unsafe = !attr.to_string().contains("safe");
+    let mut is_prelude = !attr.to_string().contains("no_prelude");
 
-    let cfg_attr = match is_bin {
-        false => quote! { #[start] },
-        true => quote! { #[cfg_attr(feature = "bin", start)] },
+    let imports = quote! {
+        ?(is_bin => #[cfg_attr(feature = "bin", macro_use)])
+        ?(!is_bin => #[macro_use])
+        extern crate macros;
+
+        ?(is_bin && is_prelude => #[cfg(feature = "bin")])
+        ?(is_bin && is_prelude => extern crate prelude;)
+
+        ?(is_prelude => use prelude::*;)
+        ?(is_libc => extern crate libc;)
     };
 
+    let cfg_attr = quote! {
+        ?(is_bin => #[cfg_attr(feature = "bin", start)])
+        ?(!is_bin => #[start])
+    };
+
+    output.extend(imports);
     output.extend(cfg_attr);
 
     for token in item {
@@ -51,10 +67,12 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                 body.extend(quote! {
                     let (program, c_args) = prelude::parse_args(argc, argv);
-                    let ?(is_mut: mut) args = c_args?(is_bin: .into_iter());
+                    let ?(is_mut => mut) args = c_args?(is_bin => .into_iter());
 
-                    #(group.stream());
-                    ?(is_ret: return 0;)
+                    ?(is_unsafe => unsafe { #(group.stream()); })
+                    ?(!is_unsafe => #(group.stream());)
+
+                    ?(is_ret => return 0;)
                 });
 
                 export!(output, { body });

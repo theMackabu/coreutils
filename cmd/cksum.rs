@@ -1,14 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::io::{self, Read};
 
 const USAGE: &str = "usage: cksum [FILE...]";
@@ -66,7 +58,7 @@ fn cksum<R: Read>(mut reader: R) -> io::Result<(u32, u64)> {
     Ok((!crc, length))
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
 

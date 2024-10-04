@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::collections::HashMap;
 use std::process::Command;
 
@@ -115,7 +108,7 @@ fn build_target(target: &str, rules: &HashMap<String, Rule>, options: &MkOptions
     Ok(())
 }
 
-#[entry::gen(cfg = ["bin", "mut"])]
+#[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
     let mut options = MkOptions {
         mkfile: "mkfile".into(),

@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::fs::File;
 use std::io::{self, BufReader, Read};
 
@@ -33,7 +26,7 @@ fn calculate_sum(mut reader: impl Read) -> io::Result<(u32, u32)> {
     Ok((sum % 65535, size))
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
 

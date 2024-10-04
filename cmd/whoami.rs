@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
@@ -32,22 +25,20 @@ struct passwd {
     pw_shell: *const c_char,
 }
 
-fn get_username() -> Result<String, Box<dyn Error>> {
-    unsafe {
-        let login = getlogin();
-        if !login.is_null() {
-            return Ok(CStr::from_ptr(login).to_string_lossy().into_owned());
-        }
-
-        let uid = geteuid();
-        let pw = getpwuid(uid);
-        if pw.is_null() {
-            return Err("Failed to get user information".into());
-        }
-
-        let username = CStr::from_ptr((*pw).pw_name);
-        Ok(username.to_string_lossy().into_owned())
+unsafe fn get_username() -> Result<String, Box<dyn Error>> {
+    let login = getlogin();
+    if !login.is_null() {
+        return Ok(CStr::from_ptr(login).to_string_lossy().into_owned());
     }
+
+    let uid = geteuid();
+    let pw = getpwuid(uid);
+    if pw.is_null() {
+        return Err("Failed to get user information".into());
+    }
+
+    let username = CStr::from_ptr((*pw).pw_name);
+    Ok(username.to_string_lossy().into_owned())
 }
 
 #[entry::gen(cfg = "bin")]

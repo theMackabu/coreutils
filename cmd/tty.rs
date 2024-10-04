@@ -1,12 +1,6 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
-
-#[cfg(feature = "bin")]
-extern crate prelude;
 
 use std::os::unix::io::AsRawFd;
 
@@ -42,7 +36,7 @@ fn get_tty_name() -> Option<String> {
     }
 }
 
-#[entry::gen(cfg = ["bin", "no_ret"])]
+#[entry::gen("bin", "no_ret", "safe")]
 fn entry() -> ! {
     let mut silent = false;
 

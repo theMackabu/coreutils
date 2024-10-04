@@ -1,14 +1,7 @@
 #![cfg_attr(feature = "bin", feature(start))]
 
-#[cfg(feature = "bin")]
-#[macro_use]
-extern crate macros;
 extern crate entry;
 
-#[cfg(feature = "bin")]
-extern crate prelude;
-
-use prelude::*;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::{mem, ptr};
 
@@ -82,7 +75,7 @@ fn null_terminated_str(bytes: &[u8]) -> String {
     String::from_utf8_lossy(&bytes[0..nul_range_end]).into_owned()
 }
 
-#[entry::gen(cfg = "bin")]
+#[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut show_all = false;
     let mut show_headers = false;
