@@ -1,9 +1,8 @@
 #![feature(rustc_private)]
+extern crate libc;
 
 #[path = "macros.rs"]
 mod macros;
-
-extern crate libc;
 
 use std::{
     ffi::{CStr, CString, OsStr, OsString},

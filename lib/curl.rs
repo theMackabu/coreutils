@@ -1,13 +1,18 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
-#[path = "prelude.rs"]
-mod prelude;
-
-use prelude::Tap;
 use std::ffi::{self, CStr, CString};
 use std::os::raw::{c_char, c_double, c_int, c_long, c_short, c_uint, c_ulong, c_void};
 use std::{error, fmt, io, ptr, str};
+
+pub trait Tap: Sized {
+    fn tap<F: FnOnce(&mut Self)>(mut self, f: F) -> Self {
+        f(&mut self);
+        self
+    }
+}
+
+impl<T> Tap for T {}
 
 pub type size_t = usize;
 pub type time_t = i64;

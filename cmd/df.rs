@@ -2,7 +2,7 @@
 #![cfg_attr(feature = "bin", feature(start, rustc_private))]
 
 extern crate entry;
-use std::ffi::{c_int, CStr};
+use std::ffi::CStr;
 
 #[cfg(target_os = "linux")]
 use std::ffi::CString;
@@ -13,9 +13,6 @@ use std::os::unix::ffi::OsStrExt;
 
 const USAGE: &str = "usage: df [-k]";
 pub const DESCRIPTION: &str = "Report file system disk space usage";
-
-pub type uid_t = u32;
-pub type c_char = i8;
 
 #[cfg(target_os = "macos")]
 #[repr(C)]
@@ -28,44 +25,44 @@ struct Statfs {
     f_files: u64,
     f_ffree: u64,
     f_fsid: [i32; 2],
-    f_owner: uid_t,
+    f_owner: libc::uid_t,
     f_type: u32,
     f_flags: u32,
     f_fssubtype: u32,
-    f_fstypename: [c_char; 16],
-    f_mntonname: [c_char; 1024],
-    f_mntfromname: [c_char; 1024],
+    f_fstypename: [libc::c_char; 16],
+    f_mntonname: [libc::c_char; 1024],
+    f_mntfromname: [libc::c_char; 1024],
     f_reserved: [u32; 8],
 }
 
 #[cfg(target_os = "linux")]
 #[repr(C)]
 struct Statfs {
-    f_type: c_long,
-    f_bsize: c_long,
+    f_type: libc::c_long,
+    f_bsize: libc::c_long,
     f_blocks: u64,
     f_bfree: u64,
     f_bavail: u64,
     f_files: u64,
     f_ffree: u64,
-    f_fsid: [c_int; 2],
-    f_namelen: c_long,
-    f_frsize: c_long,
-    f_flags: c_long,
-    f_spare: [c_long; 4],
+    f_fsid: [libc::c_int; 2],
+    f_namelen: libc::c_long,
+    f_frsize: libc::c_long,
+    f_flags: libc::c_long,
+    f_spare: [libc::c_long; 4],
 }
 
 #[cfg(target_os = "macos")]
 extern "C" {
-    fn getmntinfo(mntbufp: *mut *mut Statfs, flags: c_int) -> c_int;
+    fn getmntinfo(mntbufp: *mut *mut Statfs, flags: libc::c_int) -> libc::c_int;
 }
 
 #[cfg(target_os = "linux")]
 extern "C" {
-    fn setmntent(filename: *const c_char, type_: *const c_char) -> *mut libc::FILE;
+    fn setmntent(filename: *const libc::c_char, type_: *const libc::c_char) -> *mut libc::FILE;
     fn getmntent(stream: *mut libc::FILE) -> *mut libc::mntent;
-    fn endmntent(stream: *mut libc::FILE) -> c_int;
-    fn statfs(path: *const c_char, buf: *mut Statfs) -> c_int;
+    fn endmntent(stream: *mut libc::FILE) -> libc::c_int;
+    fn statfs(path: *const libc::c_char, buf: *mut Statfs) -> libc::c_int;
 }
 
 fn format_size(size: u64, use_512_blocks: bool) -> String {

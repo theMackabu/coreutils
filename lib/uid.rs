@@ -1,30 +1,33 @@
+#![feature(rustc_private)]
+extern crate libc;
+
 use std::ffi::{CStr, CString};
 use std::io;
 
 #[repr(C)]
 pub struct Passwd {
-    pub pw_name: *mut i8,
-    pub pw_passwd: *mut i8,
+    pub pw_name: *mut libc::c_char,
+    pub pw_passwd: *mut libc::c_char,
     pub pw_uid: u32,
     pub pw_gid: u32,
-    pub pw_gecos: *mut i8,
-    pub pw_dir: *mut i8,
-    pub pw_shell: *mut i8,
+    pub pw_gecos: *mut libc::c_char,
+    pub pw_dir: *mut libc::c_char,
+    pub pw_shell: *mut libc::c_char,
 }
 
 #[repr(C)]
 pub struct Group {
-    pub gr_name: *mut i8,
-    pub gr_passwd: *mut i8,
+    pub gr_name: *mut libc::c_char,
+    pub gr_passwd: *mut libc::c_char,
     pub gr_gid: u32,
-    pub gr_mem: *mut *mut i8,
+    pub gr_mem: *mut *mut libc::c_char,
 }
 
 #[link(name = "c")]
 extern "C" {
     pub fn getuid() -> u32;
-    pub fn getgrnam(name: *const i8) -> *mut Group;
-    pub fn getpwnam(name: *const i8) -> *mut Passwd;
+    pub fn getgrnam(name: *const libc::c_char) -> *mut Group;
+    pub fn getpwnam(name: *const libc::c_char) -> *mut Passwd;
     pub fn getpwuid(uid: u32) -> *const Passwd;
     pub fn getgrgid(gid: u32) -> *mut Group;
     pub fn getgroups(size: i32, list: *mut u32) -> i32;
