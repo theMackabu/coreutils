@@ -1,5 +1,9 @@
+#![feature(rustc_private)]
+
 #[path = "macros.rs"]
 mod macros;
+
+extern crate libc;
 
 use std::{
     ffi::{CStr, CString, OsStr, OsString},
@@ -24,13 +28,13 @@ impl_is_minus_one! { i8 i16 i32 i64 isize }
 
 #[link(name = "c")]
 extern "C" {
-    fn getenv(s: *const i8) -> *mut i8;
+    fn getenv(s: *const libc::c_char) -> *mut libc::c_char;
 }
 
 #[cfg(target_os = "macos")]
 #[link(name = "c")]
 extern "C" {
-    fn _NSGetEnviron() -> *mut *mut *mut i8;
+    fn _NSGetEnviron() -> *mut *mut *mut libc::c_char;
 }
 
 pub struct Vars {
@@ -48,14 +52,14 @@ impl Iterator for Vars {
 }
 
 #[cfg(target_os = "macos")]
-unsafe fn environ() -> *mut *const *const i8 {
-    _NSGetEnviron() as *mut *const *const i8
+unsafe fn environ() -> *mut *const *const libc::c_char {
+    _NSGetEnviron() as *mut *const *const libc::c_char
 }
 
 #[cfg(not(target_os = "macos"))]
-unsafe fn environ() -> *mut *const *const i8 {
+unsafe fn environ() -> *mut *const *const libc::c_char {
     extern "C" {
-        static mut environ: *const *const i8;
+        static mut environ: *const *const libc::c_char;
     }
     std::ptr::addr_of_mut!(environ)
 }
@@ -125,7 +129,7 @@ pub fn vars() -> Vec<String> {
 
 pub fn get(k: &OsStr) -> Option<OsString> {
     run_with_cstr(k.as_bytes(), &|k| {
-        let v = unsafe { getenv(k.as_ptr()) } as *const i8;
+        let v = unsafe { getenv(k.as_ptr()) } as *const libc::c_char;
 
         if v.is_null() {
             Ok(None)

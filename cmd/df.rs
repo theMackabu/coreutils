@@ -1,5 +1,5 @@
 #![allow(non_camel_case_types)]
-#![cfg_attr(feature = "bin", feature(start))]
+#![cfg_attr(feature = "bin", feature(start, rustc_private))]
 
 extern crate entry;
 use std::ffi::{c_int, CStr};
@@ -147,7 +147,7 @@ fn print_df(mntent: &libc::mntent, use_512_blocks: bool) -> io::Result<()> {
     Ok(())
 }
 
-#[entry::gen("bin")]
+#[entry::gen("bin", "libc")]
 fn entry() -> ! {
     let mut use_512_blocks = true;
 
