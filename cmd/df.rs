@@ -108,7 +108,9 @@ fn print_df(statfs_buf: &Statfs, use_512_blocks: bool) -> io::Result<()> {
 #[cfg(target_os = "linux")]
 fn print_df(mntent: &libc::mntent, use_512_blocks: bool) -> io::Result<()> {
     let mut statfs_buf: Statfs = unsafe { mem::zeroed() };
-    let c_path = CString::new(mntent.mnt_dir)?;
+    
+    let mount_dir = unsafe { CStr::from_ptr(mntent.mnt_dir) }.to_str()?;
+    let c_path = CString::new(mount_dir)?;
 
     if unsafe { statfs(c_path.as_ptr(), &mut statfs_buf) } == -1 {
         return Err(io::Error::last_os_error());
@@ -200,6 +202,6 @@ fn entry() -> ! {
             }
         }
 
-        unsafe { endmntent(file) };
+        endmntent(file);
     }
 }

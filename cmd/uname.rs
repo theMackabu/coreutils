@@ -106,6 +106,7 @@ fn get_sys_info() -> Result<SysInfo, Box<dyn std::error::Error>> {
 
     #[cfg(not(target_os = "macos"))]
     {
+        use std::mem::MaybeUninit;
         let mut uname_info: MaybeUninit<UtsName> = MaybeUninit::uninit();
         if unsafe { uname(uname_info.as_mut_ptr()) } == 0 {
             let uname_info = unsafe { uname_info.assume_init() };

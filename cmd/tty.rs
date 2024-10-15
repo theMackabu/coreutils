@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "bin", feature(start))]
+#![cfg_attr(feature = "bin", feature(start, rustc_private))]
 
 extern crate entry;
 
@@ -10,14 +10,14 @@ pub const DESCRIPTION: &str = "Print the file name of the terminal";
 #[cfg(target_os = "macos")]
 #[link(name = "c")]
 extern "C" {
-    fn ttyname(fd: i32) -> *const i8;
+    fn ttyname(fd: i32) -> *const libc::c_char;
     fn isatty(fd: i32) -> i32;
 }
 
 #[cfg(not(target_os = "macos"))]
 #[link(name = "c")]
 extern "C" {
-    fn ttyname(fd: i32) -> *const i8;
+    fn ttyname(fd: i32) -> *const libc::c_char;
     fn isatty(fd: i32) -> i32;
 }
 
@@ -36,7 +36,7 @@ fn get_tty_name() -> Option<String> {
     }
 }
 
-#[entry::gen("bin", "no_ret", "safe")]
+#[entry::gen("bin", "no_ret", "safe", "libc")]
 fn entry() -> ! {
     let mut silent = false;
 
