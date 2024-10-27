@@ -44,7 +44,11 @@ fn mv(source: &Path, destination: &Path, options: &MvOptions) -> Result<(), Box<
     fs::rename(source, destination)?;
 
     if options.verbose {
-        println!("renamed '{}' -> '{}'", source.display(), destination.display());
+        println!(
+            "renamed '{}' -> '{}'",
+            source.display(),
+            destination.display()
+        );
     }
 
     Ok(())
@@ -89,7 +93,12 @@ fn entry() -> ! {
         };
 
         if let Err(err) = mv(source, &dest, &options) {
-            error!("mv: cannot move '{}' to '{}': {}", source.display(), dest.display(), err);
+            error!(
+                "mv: cannot move '{}' to '{}': {}",
+                source.display(),
+                dest.display(),
+                err
+            );
         }
     }
 }

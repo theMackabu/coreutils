@@ -29,7 +29,9 @@ fn parse_duration(s: &str) -> Result<Duration, Box<dyn std::error::Error>> {
         err => return Err(err.expect("?").to_string().into()),
     };
 
-    Ok(Duration::from_secs_f64(num_str.parse::<f64>()? * multiplier))
+    Ok(Duration::from_secs_f64(
+        num_str.parse::<f64>()? * multiplier,
+    ))
 }
 
 #[entry::gen("bin", "safe")]

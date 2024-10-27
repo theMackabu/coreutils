@@ -28,10 +28,16 @@ impl<'f> File<'f> {
 
     fn touch(&self) -> Result<isize, Box<dyn Error>> {
         if self.no_create && !self.exists() {
-            error!("touch: cannot touch {:?}: No such file or directory", self.path);
+            error!(
+                "touch: cannot touch {:?}: No such file or directory",
+                self.path
+            );
         }
 
-        let file = OpenOptions::new().create(!self.no_create).write(true).open(&self.path)?;
+        let file = OpenOptions::new()
+            .create(!self.no_create)
+            .write(true)
+            .open(&self.path)?;
 
         file.set_modified(self.time)?;
 
@@ -53,9 +59,16 @@ fn entry() -> ! {
         match arg {
             b"-c" => no_create = true,
             b"-t" => {
-                let time_str = args.next().unwrap_or_else(|| error!("touch: option requires an argument -t"));
-                let seconds = std::str::from_utf8(time_str).unwrap_or_else(|_| error!("touch: invalid time: {:?}", time_str)).parse::<u64>();
-                time = UNIX_EPOCH + Duration::from_secs(seconds.unwrap_or_else(|_| error!("touch: invalid time: {:?}", time_str)));
+                let time_str = args
+                    .next()
+                    .unwrap_or_else(|| error!("touch: option requires an argument -t"));
+                let seconds = std::str::from_utf8(time_str)
+                    .unwrap_or_else(|_| error!("touch: invalid time: {:?}", time_str))
+                    .parse::<u64>();
+                time = UNIX_EPOCH
+                    + Duration::from_secs(
+                        seconds.unwrap_or_else(|_| error!("touch: invalid time: {:?}", time_str)),
+                    );
             }
             _ => files.push(arg),
         }

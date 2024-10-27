@@ -26,7 +26,9 @@ extern "C" {
 
 #[entry::gen("bin", "mut")]
 fn entry() -> ! {
-    let new_root = args.next().unwrap_or_else(|| usage!("chroot: missing operand"));
+    let new_root = args
+        .next()
+        .unwrap_or_else(|| usage!("chroot: missing operand"));
     let new_root = PathBuf::from(OsStr::from_bytes(new_root));
 
     let command = args.next();
@@ -37,11 +39,18 @@ fn entry() -> ! {
     });
 
     if chroot(new_root_cstr.as_ptr()) != 0 {
-        error!("chroot: failed to change root to {}: {}", new_root.display(), io::Error::last_os_error());
+        error!(
+            "chroot: failed to change root to {}: {}",
+            new_root.display(),
+            io::Error::last_os_error()
+        );
     }
 
     if std::env::set_current_dir("/").is_err() {
-        error!("chroot: failed to change directory to /: {}", io::Error::last_os_error());
+        error!(
+            "chroot: failed to change directory to /: {}",
+            io::Error::last_os_error()
+        );
     }
 
     if let Some(cmd) = command {
@@ -55,7 +64,11 @@ fn entry() -> ! {
             Err(err) => error!("chroot: failed to parse command: {err}"),
         };
 
-        let args = match command_args.into_iter().map(parse).collect::<Result<Vec<_>, _>>() {
+        let args = match command_args
+            .into_iter()
+            .map(parse)
+            .collect::<Result<Vec<_>, _>>()
+        {
             Ok(args) => args,
             Err(err) => error!("chroot: failed to parse command arguments: {err}"),
         };

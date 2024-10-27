@@ -17,7 +17,10 @@ pub type uid_t = u32;
 
 #[link(name = "c")]
 extern "C" {
-    #[cfg_attr(all(target_os = "macos", target_arch = "x86"), link_name = "lchown$UNIX2003")]
+    #[cfg_attr(
+        all(target_os = "macos", target_arch = "x86"),
+        link_name = "lchown$UNIX2003"
+    )]
     fn lchown(path: *const c_char, uid: uid_t, gid: gid_t) -> c_int;
     fn chown(path: *const c_char, uid: uid_t, gid: gid_t) -> c_int;
 }
@@ -27,7 +30,9 @@ unsafe fn do_lchown<P: AsRef<Path>>(path: P, uid: Option<u32>, gid: Option<u32>)
     let uid = uid.unwrap_or(u32::MAX);
     let gid = gid.unwrap_or(u32::MAX);
 
-    run_path_with_cstr(path, &|path| cvt(lchown(path.as_ptr(), uid as uid_t, gid as gid_t)).map(|_| ()))
+    run_path_with_cstr(path, &|path| {
+        cvt(lchown(path.as_ptr(), uid as uid_t, gid as gid_t)).map(|_| ())
+    })
 }
 
 unsafe fn do_chown<P: AsRef<Path>>(dir: P, uid: Option<u32>, gid: Option<u32>) -> io::Result<()> {
@@ -35,7 +40,9 @@ unsafe fn do_chown<P: AsRef<Path>>(dir: P, uid: Option<u32>, gid: Option<u32>) -
     let uid = uid.unwrap_or(u32::MAX);
     let gid = gid.unwrap_or(u32::MAX);
 
-    run_path_with_cstr(dir, &|dir| cvt(chown(dir.as_ptr(), uid as uid_t, gid as gid_t)).map(|_| ()))
+    run_path_with_cstr(dir, &|dir| {
+        cvt(chown(dir.as_ptr(), uid as uid_t, gid as gid_t)).map(|_| ())
+    })
 }
 
 #[entry::gen("bin")]
@@ -59,7 +66,9 @@ fn entry() -> ! {
         on_invalid: |arg| usage!("chown: invalid option -- '{}'", arg as char)
     }
 
-    let binding = owner_group.to_owned().unwrap_or_else(|| usage!("chown: missing owner[:group]"));
+    let binding = owner_group
+        .to_owned()
+        .unwrap_or_else(|| usage!("chown: missing owner[:group]"));
 
     let lbinding: &'static str = {
         let ptr = binding.as_ptr();
@@ -72,13 +81,19 @@ fn entry() -> ! {
 
     let uid = match owner.parse::<u32>() {
         Ok(id) => id,
-        Err(_) => get_user_info(Some(owner), None).unwrap_or_else(|_| error!("chown: invalid owner: '{}'", owner)).0,
+        Err(_) => {
+            get_user_info(Some(owner), None)
+                .unwrap_or_else(|_| error!("chown: invalid owner: '{}'", owner))
+                .0
+        }
     };
 
     let gid = if !group.is_empty() {
         match group.parse::<u32>() {
             Ok(id) => Some(id),
-            Err(_) => Some(get_group_id(group).unwrap_or_else(|_| error!("chown: invalid group: '{}'", group))),
+            Err(_) => Some(
+                get_group_id(group).unwrap_or_else(|_| error!("chown: invalid group: '{}'", group)),
+            ),
         }
     } else {
         None

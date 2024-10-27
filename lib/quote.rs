@@ -1,6 +1,9 @@
 macro_rules! export {
     ($output:ident, { $body:ident }) => {
-        $output.extend(std::iter::once(TokenTree::Group(Group::new(Delimiter::Brace, $body))));
+        $output.extend(std::iter::once(TokenTree::Group(Group::new(
+            Delimiter::Brace,
+            $body,
+        ))));
     };
 }
 
@@ -104,21 +107,39 @@ macro_rules! quote_inner {
 
 macro_rules! quote_punct {
     ($output:ident, =) => {
-        $output.extend(std::iter::once(TokenTree::Punct(Punct::new('=', Spacing::Alone))));
+        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(
+            '=',
+            Spacing::Alone,
+        ))));
     };
     ($output:ident, ;) => {
-        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(';', Spacing::Alone))));
+        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(
+            ';',
+            Spacing::Alone,
+        ))));
     };
     ($output:ident, ?) => {
-        $output.extend(std::iter::once(TokenTree::Punct(Punct::new('?', Spacing::Alone))));
+        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(
+            '?',
+            Spacing::Alone,
+        ))));
     };
     ($output:ident, .) => {
-        $output.extend(std::iter::once(TokenTree::Punct(Punct::new('.', Spacing::Alone))));
+        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(
+            '.',
+            Spacing::Alone,
+        ))));
     };
     ($output:ident, ::) => {
-        $output.extend(vec![TokenTree::Punct(Punct::new(':', Spacing::Joint)), TokenTree::Punct(Punct::new(':', Spacing::Alone))]);
+        $output.extend(vec![
+            TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+            TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+        ]);
     };
     ($output:ident, $other:tt) => {
-        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(stringify!($other).chars().next().unwrap(), Spacing::Alone))));
+        $output.extend(std::iter::once(TokenTree::Punct(Punct::new(
+            stringify!($other).chars().next().unwrap(),
+            Spacing::Alone,
+        ))));
     };
 }

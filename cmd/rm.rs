@@ -29,7 +29,10 @@ fn remove_file(path: &Path, options: &RemoveOptions) -> Result<(), Box<dyn Error
 
 #[entry::gen("bin", "mut", "safe")]
 fn entry() -> ! {
-    let mut options = RemoveOptions { recursive: false, force: false };
+    let mut options = RemoveOptions {
+        recursive: false,
+        force: false,
+    };
     let mut files = Vec::new();
 
     if argc < 2 {

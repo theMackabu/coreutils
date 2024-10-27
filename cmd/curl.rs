@@ -111,31 +111,44 @@ impl<H: Handler> Client<H> {
     }
 
     fn default_configure(&mut self) {
-        self.setopt_ptr(curl::CURLOPT_ERRORBUFFER, self.inner.error_buf.borrow().as_ptr() as *const _)
-            .expect("failed to set error buffer");
+        self.setopt_ptr(
+            curl::CURLOPT_ERRORBUFFER,
+            self.inner.error_buf.borrow().as_ptr() as *const _,
+        )
+        .expect("failed to set error buffer");
 
         let _ = self.signal(false);
         let ptr = &*self.inner as *const _ as *const _;
 
         let cb: extern "C" fn(*mut c_char, size_t, size_t, *mut c_void) -> size_t = header_cb::<H>;
-        self.setopt_ptr(curl::CURLOPT_HEADERFUNCTION, cb as *const _).expect("failed to set header callback");
-        self.setopt_ptr(curl::CURLOPT_HEADERDATA, ptr).expect("failed to set header callback");
+        self.setopt_ptr(curl::CURLOPT_HEADERFUNCTION, cb as *const _)
+            .expect("failed to set header callback");
+        self.setopt_ptr(curl::CURLOPT_HEADERDATA, ptr)
+            .expect("failed to set header callback");
 
         let cb: curl::curl_write_callback = write_cb::<H>;
-        self.setopt_ptr(curl::CURLOPT_WRITEFUNCTION, cb as *const _).expect("failed to set write callback");
-        self.setopt_ptr(curl::CURLOPT_WRITEDATA, ptr).expect("failed to set write callback");
+        self.setopt_ptr(curl::CURLOPT_WRITEFUNCTION, cb as *const _)
+            .expect("failed to set write callback");
+        self.setopt_ptr(curl::CURLOPT_WRITEDATA, ptr)
+            .expect("failed to set write callback");
 
         let cb: curl::curl_read_callback = read_cb::<H>;
-        self.setopt_ptr(curl::CURLOPT_READFUNCTION, cb as *const _).expect("failed to set read callback");
-        self.setopt_ptr(curl::CURLOPT_READDATA, ptr).expect("failed to set read callback");
+        self.setopt_ptr(curl::CURLOPT_READFUNCTION, cb as *const _)
+            .expect("failed to set read callback");
+        self.setopt_ptr(curl::CURLOPT_READDATA, ptr)
+            .expect("failed to set read callback");
 
         let cb: curl::curl_seek_callback = seek_cb::<H>;
-        self.setopt_ptr(curl::CURLOPT_SEEKFUNCTION, cb as *const _).expect("failed to set seek callback");
-        self.setopt_ptr(curl::CURLOPT_SEEKDATA, ptr).expect("failed to set seek callback");
+        self.setopt_ptr(curl::CURLOPT_SEEKFUNCTION, cb as *const _)
+            .expect("failed to set seek callback");
+        self.setopt_ptr(curl::CURLOPT_SEEKDATA, ptr)
+            .expect("failed to set seek callback");
 
         let cb: curl::curl_progress_callback = progress_cb::<H>;
-        self.setopt_ptr(curl::CURLOPT_PROGRESSFUNCTION, cb as *const _).expect("failed to set progress callback");
-        self.setopt_ptr(curl::CURLOPT_PROGRESSDATA, ptr).expect("failed to set progress callback");
+        self.setopt_ptr(curl::CURLOPT_PROGRESSFUNCTION, cb as *const _)
+            .expect("failed to set progress callback");
+        self.setopt_ptr(curl::CURLOPT_PROGRESSDATA, ptr)
+            .expect("failed to set progress callback");
 
         let cb: curl::curl_ssl_ctx_callback = ssl_ctx_cb::<H>;
         drop(self.setopt_ptr(curl::CURLOPT_SSL_CTX_FUNCTION, cb as *const _));
@@ -266,7 +279,8 @@ impl<H: Handler> Client<H> {
     }
 
     fn response_code(&self) -> Result<u32, Error> {
-        self.getopt_long(curl::CURLINFO_RESPONSE_CODE).map(|c| c as u32)
+        self.getopt_long(curl::CURLINFO_RESPONSE_CODE)
+            .map(|c| c as u32)
     }
 
     fn effective_url(&self) -> Result<Option<&str>, Error> {
@@ -305,7 +319,10 @@ impl<H: Handler> Client<H> {
     {
         let read_fn = Box::new(read_fn);
         self.setopt_ptr(curl::CURLOPT_READFUNCTION, read_callback::<F> as *const _)?;
-        self.setopt_ptr(curl::CURLOPT_READDATA, Box::into_raw(Box::new(read_fn)) as *mut _)
+        self.setopt_ptr(
+            curl::CURLOPT_READDATA,
+            Box::into_raw(Box::new(read_fn)) as *mut _,
+        )
     }
 
     fn set_seek_function<F>(&mut self, seek_fn: F) -> Result<(), Error>
@@ -314,7 +331,10 @@ impl<H: Handler> Client<H> {
     {
         let seek_fn = Box::new(seek_fn);
         self.setopt_ptr(curl::CURLOPT_SEEKFUNCTION, seek_callback::<F> as *const _)?;
-        self.setopt_ptr(curl::CURLOPT_SEEKDATA, Box::into_raw(Box::new(seek_fn)) as *mut _)
+        self.setopt_ptr(
+            curl::CURLOPT_SEEKDATA,
+            Box::into_raw(Box::new(seek_fn)) as *mut _,
+        )
     }
 
     fn cvt(&self, rc: curl::CURLcode) -> Result<(), Error> {
@@ -386,7 +406,9 @@ fn send_request(url: &str, options: &mut Options) -> Result<(), Error> {
         let file_clone = Arc::clone(&file);
         let seeker = move |pos: SeekFrom| {
             let mut file = file_clone.lock().unwrap();
-            file.seek(pos).map(|_| ()).map_err(|_| Error::new(curl::CURLE_SEND_FAIL_REWIND))
+            file.seek(pos)
+                .map(|_| ())
+                .map_err(|_| Error::new(curl::CURLE_SEND_FAIL_REWIND))
         };
 
         client.set_read_function(reader)?;
@@ -433,7 +455,9 @@ fn send_request(url: &str, options: &mut Options) -> Result<(), Error> {
     let result = &client.inner.handler.result();
 
     if options.remote_name {
-        options.output = client.effective_url()?.and_then(|url| url.rsplit('/').next().map(str::to_owned));
+        options.output = client
+            .effective_url()?
+            .and_then(|url| url.rsplit('/').next().map(str::to_owned));
     }
 
     if let Some(ref output) = options.output {
@@ -444,7 +468,12 @@ fn send_request(url: &str, options: &mut Options) -> Result<(), Error> {
     Ok(io::stdout().write_all(result)?)
 }
 
-extern "C" fn header_cb<H: Handler>(buffer: *mut c_char, size: size_t, nitems: size_t, userptr: *mut c_void) -> size_t {
+extern "C" fn header_cb<H: Handler>(
+    buffer: *mut c_char,
+    size: size_t,
+    nitems: size_t,
+    userptr: *mut c_void,
+) -> size_t {
     let keep_going = panic::catch(|| unsafe {
         let data = slice::from_raw_parts(buffer as *const u8, size * nitems);
         (*(userptr as *mut Inner<H>)).handler.header(data)
@@ -457,7 +486,12 @@ extern "C" fn header_cb<H: Handler>(buffer: *mut c_char, size: size_t, nitems: s
     }
 }
 
-extern "C" fn write_cb<H: Handler>(ptr: *mut c_char, size: size_t, nmemb: size_t, data: *mut c_void) -> size_t {
+extern "C" fn write_cb<H: Handler>(
+    ptr: *mut c_char,
+    size: size_t,
+    nmemb: size_t,
+    data: *mut c_void,
+) -> size_t {
     panic::catch(|| unsafe {
         let input = slice::from_raw_parts(ptr as *const u8, size * nmemb);
         match (*(data as *mut Inner<H>)).handler.write(input) {
@@ -468,7 +502,12 @@ extern "C" fn write_cb<H: Handler>(ptr: *mut c_char, size: size_t, nmemb: size_t
     .unwrap_or(!0)
 }
 
-extern "C" fn read_cb<H: Handler>(ptr: *mut c_char, size: size_t, nmemb: size_t, data: *mut c_void) -> size_t {
+extern "C" fn read_cb<H: Handler>(
+    ptr: *mut c_char,
+    size: size_t,
+    nmemb: size_t,
+    data: *mut c_void,
+) -> size_t {
     panic::catch(|| unsafe {
         let input = slice::from_raw_parts_mut(ptr as *mut u8, size * nmemb);
         match (*(data as *mut Inner<H>)).handler.read(input) {
@@ -480,7 +519,11 @@ extern "C" fn read_cb<H: Handler>(ptr: *mut c_char, size: size_t, nmemb: size_t,
     .unwrap_or(!0)
 }
 
-extern "C" fn seek_cb<H: Handler>(data: *mut c_void, offset: curl::curl_off_t, origin: c_int) -> c_int {
+extern "C" fn seek_cb<H: Handler>(
+    data: *mut c_void,
+    offset: curl::curl_off_t,
+    origin: c_int,
+) -> c_int {
     panic::catch(|| unsafe {
         let from = if origin == 0 {
             SeekFrom::Start(offset as u64)
@@ -492,8 +535,19 @@ extern "C" fn seek_cb<H: Handler>(data: *mut c_void, offset: curl::curl_off_t, o
     .unwrap_or(!0)
 }
 
-extern "C" fn progress_cb<H: Handler>(data: *mut c_void, dltotal: c_double, dlnow: c_double, ultotal: c_double, ulnow: c_double) -> c_int {
-    let keep_going = panic::catch(|| unsafe { (*(data as *mut Inner<H>)).handler.progress(dltotal, dlnow, ultotal, ulnow) }).unwrap_or(false);
+extern "C" fn progress_cb<H: Handler>(
+    data: *mut c_void,
+    dltotal: c_double,
+    dlnow: c_double,
+    ultotal: c_double,
+    ulnow: c_double,
+) -> c_int {
+    let keep_going = panic::catch(|| unsafe {
+        (*(data as *mut Inner<H>))
+            .handler
+            .progress(dltotal, dlnow, ultotal, ulnow)
+    })
+    .unwrap_or(false);
     if keep_going {
         0
     } else {
@@ -501,7 +555,11 @@ extern "C" fn progress_cb<H: Handler>(data: *mut c_void, dltotal: c_double, dlno
     }
 }
 
-extern "C" fn ssl_ctx_cb<H: Handler>(_handle: *mut curl::CURL, ssl_ctx: *mut c_void, data: *mut c_void) -> curl::CURLcode {
+extern "C" fn ssl_ctx_cb<H: Handler>(
+    _handle: *mut curl::CURL,
+    ssl_ctx: *mut c_void,
+    data: *mut c_void,
+) -> curl::CURLcode {
     let res = panic::catch(|| unsafe {
         match (*(data as *mut Inner<H>)).handler.ssl_ctx(ssl_ctx) {
             Ok(()) => curl::CURLE_OK,
@@ -511,7 +569,12 @@ extern "C" fn ssl_ctx_cb<H: Handler>(_handle: *mut curl::CURL, ssl_ctx: *mut c_v
     res.unwrap_or(curl::CURLE_SSL_CONNECT_ERROR)
 }
 
-extern "C" fn read_callback<F>(ptr: *mut c_char, size: size_t, nmemb: size_t, userdata: *mut c_void) -> size_t
+extern "C" fn read_callback<F>(
+    ptr: *mut c_char,
+    size: size_t,
+    nmemb: size_t,
+    userdata: *mut c_void,
+) -> size_t
 where
     F: FnMut(&mut [u8]) -> Result<usize, ReadError>,
 {
@@ -526,7 +589,11 @@ where
     }
 }
 
-extern "C" fn seek_callback<F>(userdata: *mut c_void, offset: curl::curl_off_t, origin: c_int) -> c_int
+extern "C" fn seek_callback<F>(
+    userdata: *mut c_void,
+    offset: curl::curl_off_t,
+    origin: c_int,
+) -> c_int
 where
     F: FnMut(SeekFrom) -> Result<(), Error>,
 {

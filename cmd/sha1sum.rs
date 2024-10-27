@@ -35,7 +35,10 @@ fn sha1block(state: &mut [u32; 5], buf: &[u8]) {
     let mut e = state[4];
 
     for i in 0..16 {
-        w[i] = (buf[i * 4] as u32) << 24 | (buf[i * 4 + 1] as u32) << 16 | (buf[i * 4 + 2] as u32) << 8 | (buf[i * 4 + 3] as u32);
+        w[i] = (buf[i * 4] as u32) << 24
+            | (buf[i * 4 + 1] as u32) << 16
+            | (buf[i * 4 + 2] as u32) << 8
+            | (buf[i * 4 + 3] as u32);
     }
 
     for i in 16..80 {
@@ -55,7 +58,12 @@ fn sha1block(state: &mut [u32; 5], buf: &[u8]) {
             40..=59 => 0x8f1bbcdc,
             _ => 0xca62c1d6,
         };
-        let temp = a.rotate_left(5).wrapping_add(f).wrapping_add(e).wrapping_add(k).wrapping_add(w[i]);
+        let temp = a
+            .rotate_left(5)
+            .wrapping_add(f)
+            .wrapping_add(e)
+            .wrapping_add(k)
+            .wrapping_add(w[i]);
         e = d;
         d = c;
         c = b.rotate_left(30);
@@ -143,9 +151,22 @@ fn sum(mut reader: impl Read, name: Option<&str>) -> io::Result<()> {
     let digest = sha1_final(s);
 
     if let Some(name) = name {
-        println!("{}  {}", digest.iter().map(|b| format!("{:02x}", b)).collect::<String>(), name);
+        println!(
+            "{}  {}",
+            digest
+                .iter()
+                .map(|b| format!("{:02x}", b))
+                .collect::<String>(),
+            name
+        );
     } else {
-        println!("{}", digest.iter().map(|b| format!("{:02x}", b)).collect::<String>());
+        println!(
+            "{}",
+            digest
+                .iter()
+                .map(|b| format!("{:02x}", b))
+                .collect::<String>()
+        );
     }
 
     Ok(())

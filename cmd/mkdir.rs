@@ -14,7 +14,10 @@ struct Dir<'d> {
 
 impl<'d> Dir<'d> {
     fn new(path: &'d [u8], mode: u32) -> Self {
-        Self { path: OsStr::from_bytes(path), mode }
+        Self {
+            path: OsStr::from_bytes(path),
+            mode,
+        }
     }
 
     fn exists(&self) -> bool {
@@ -36,7 +39,13 @@ impl<'d> Dir<'d> {
     }
 
     fn recursive(&self) -> Result<isize, Box<dyn Error>> {
-        let cmp: Vec<&OsStr> = self.path.as_bytes().split(|&b| b == b'/').filter(|s| !s.is_empty()).map(|s| OsStr::from_bytes(s)).collect();
+        let cmp: Vec<&OsStr> = self
+            .path
+            .as_bytes()
+            .split(|&b| b == b'/')
+            .filter(|s| !s.is_empty())
+            .map(|s| OsStr::from_bytes(s))
+            .collect();
 
         for i in 0..cmp.len() {
             let path = cmp[..=i].join(OsStr::from_bytes(b"/"));
@@ -66,9 +75,13 @@ fn entry() -> ! {
     while let Some(arg) = args.next() {
         match arg {
             b"-m" => {
-                let bit = args.next().unwrap_or_else(|| error!("mkdir: option requires an argument -m"));
-                let mode_str = std::str::from_utf8(bit).unwrap_or_else(|_| error!("mkdir: invalid mode: {bit:?}"));
-                mode = u32::from_str_radix(mode_str, 8).unwrap_or_else(|_| error!("mkdir: invalid mode: {mode_str}"));
+                let bit = args
+                    .next()
+                    .unwrap_or_else(|| error!("mkdir: option requires an argument -m"));
+                let mode_str = std::str::from_utf8(bit)
+                    .unwrap_or_else(|_| error!("mkdir: invalid mode: {bit:?}"));
+                mode = u32::from_str_radix(mode_str, 8)
+                    .unwrap_or_else(|_| error!("mkdir: invalid mode: {mode_str}"));
             }
             b"-p" => recursive = true,
             _ => directories.push(arg),

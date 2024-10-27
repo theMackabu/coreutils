@@ -47,7 +47,8 @@ fn parse_mkfile(content: &str) -> HashMap<String, Rule> {
             let parts: Vec<&str> = trimmed.splitn(2, ':').collect();
             if parts.len() == 2 {
                 let targets: Vec<String> = parts[0].split_whitespace().map(String::from).collect();
-                let prerequisites: Vec<String> = parts[1].split_whitespace().map(String::from).collect();
+                let prerequisites: Vec<String> =
+                    parts[1].split_whitespace().map(String::from).collect();
                 current_rule = Some(Rule {
                     targets,
                     prerequisites,
@@ -79,13 +80,21 @@ fn execute_recipe(rule: &Rule, options: &MkOptions) -> io::Result<()> {
         let status = Command::new(shell).arg("-c").arg(&recipe).status()?;
 
         if !status.success() && !options.keep_going {
-            return Err(io::Error::new(io::ErrorKind::Other, "Recipe execution failed"));
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Recipe execution failed",
+            ));
         }
     }
     Ok(())
 }
 
-fn build_target(target: &str, rules: &HashMap<String, Rule>, options: &MkOptions, built: &mut HashMap<String, bool>) -> io::Result<()> {
+fn build_target(
+    target: &str,
+    rules: &HashMap<String, Rule>,
+    options: &MkOptions,
+    built: &mut HashMap<String, bool>,
+) -> io::Result<()> {
     if *built.get(target).unwrap_or(&false) {
         return Ok(());
     }
@@ -102,7 +111,10 @@ fn build_target(target: &str, rules: &HashMap<String, Rule>, options: &MkOptions
         execute_recipe(rule, options)?;
         built.insert(target.to_string(), true);
     } else if !Path::new(target).exists() {
-        return Err(io::Error::new(io::ErrorKind::NotFound, format!("No rule to make target '{}'", target)));
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("No rule to make target '{}'", target),
+        ));
     }
 
     Ok(())
@@ -143,7 +155,8 @@ fn entry() -> ! {
         on_invalid: |arg| usage!("mk: invalid option -- '{}'", arg as char)
     }
 
-    let mkfile_content = std::fs::read_to_string(&options.mkfile).unwrap_or_else(|_| error!("mk: cannot read mkfile '{}'", options.mkfile));
+    let mkfile_content = std::fs::read_to_string(&options.mkfile)
+        .unwrap_or_else(|_| error!("mk: cannot read mkfile '{}'", options.mkfile));
 
     let rules = parse_mkfile(&mkfile_content);
 

@@ -4,7 +4,8 @@ extern crate entry;
 use std::io::{self, Read, Write};
 
 const USAGE: &str = "usage: base64 <string> [-d] [-i] [-o output_file] [file]";
-const BASE64_ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const BASE64_ALPHABET: &[u8; 64] =
+    b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 pub const DESCRIPTION: &str = "Encode or decode using Base64 representation";
 
 fn encode_base64<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<()> {
@@ -21,8 +22,16 @@ fn encode_base64<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<
 
                 let e1 = BASE64_ALPHABET[(num >> 18) as usize];
                 let e2 = BASE64_ALPHABET[((num >> 12) & 63) as usize];
-                let e3 = if n > 1 { BASE64_ALPHABET[((num >> 6) & 63) as usize] } else { b'=' };
-                let e4 = if n > 2 { BASE64_ALPHABET[(num & 63) as usize] } else { b'=' };
+                let e3 = if n > 1 {
+                    BASE64_ALPHABET[((num >> 6) & 63) as usize]
+                } else {
+                    b'='
+                };
+                let e4 = if n > 2 {
+                    BASE64_ALPHABET[(num & 63) as usize]
+                } else {
+                    b'='
+                };
 
                 writer.write_all(&[e1, e2, e3, e4])?;
             }
@@ -104,7 +113,9 @@ fn entry() -> ! {
     }
 
     let input: Box<dyn Read> = match (input_file, input_string) {
-        (Some(path), None) => Box::new(File::open(path).unwrap_or_else(|e| error!("base64: {}", e))),
+        (Some(path), None) => {
+            Box::new(File::open(path).unwrap_or_else(|e| error!("base64: {}", e)))
+        }
         (None, Some(string)) => Box::new(io::Cursor::new(string)),
         (None, None) => Box::new(io::stdin()),
         _ => usage!("base64: cannot specify both input file and string"),
@@ -128,5 +139,7 @@ fn entry() -> ! {
         println!();
     }
 
-    io::stdout().flush().unwrap_or_else(|e| error!("base64: failed to flush stdout: {}", e));
+    io::stdout()
+        .flush()
+        .unwrap_or_else(|e| error!("base64: failed to flush stdout: {}", e));
 }

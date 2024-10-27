@@ -58,7 +58,9 @@ fn read_utmp() -> io::Result<Vec<UtmpEntry>> {
 
 fn format_time(tv: &Timeval) -> String {
     let time = UNIX_EPOCH + Duration::from_secs(tv.tv_sec as u64);
-    let datetime = SystemTime::now().duration_since(time).unwrap_or(Duration::from_secs(0));
+    let datetime = SystemTime::now()
+        .duration_since(time)
+        .unwrap_or(Duration::from_secs(0));
     let days = datetime.as_secs() / 86400;
     let hours = (datetime.as_secs() % 86400) / 3600;
     let minutes = (datetime.as_secs() % 3600) / 60;
@@ -71,7 +73,10 @@ fn format_time(tv: &Timeval) -> String {
 }
 
 fn null_terminated_str(bytes: &[u8]) -> String {
-    let nul_range_end = bytes.iter().position(|&c| c == b'\0').unwrap_or(bytes.len());
+    let nul_range_end = bytes
+        .iter()
+        .position(|&c| c == b'\0')
+        .unwrap_or(bytes.len());
     String::from_utf8_lossy(&bytes[0..nul_range_end]).into_owned()
 }
 
@@ -103,9 +108,15 @@ fn entry() -> ! {
                     let host = null_terminated_str(&entry.ut_host);
                     let idle = format_time(&entry.ut_tv);
                     let login_time = UNIX_EPOCH + Duration::from_secs(entry.ut_tv.tv_sec as u64);
-                    let login_time_str = format!("{}", login_time.duration_since(UNIX_EPOCH).unwrap().as_secs());
+                    let login_time_str = format!(
+                        "{}",
+                        login_time.duration_since(UNIX_EPOCH).unwrap().as_secs()
+                    );
 
-                    println!("{:<15} {:<15} {:<7} {:<16} {}", username, tty, idle, login_time_str, host);
+                    println!(
+                        "{:<15} {:<15} {:<7} {:<16} {}",
+                        username, tty, idle, login_time_str, host
+                    );
                 }
             }
         }

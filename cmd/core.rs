@@ -31,7 +31,11 @@ lazy_lock! {
 }
 
 fn generate_usage() -> String {
-    let max_name_len = COMMANDS.iter().map(|(name, _)| name.len()).max().unwrap_or(0);
+    let max_name_len = COMMANDS
+        .iter()
+        .map(|(name, _)| name.len())
+        .max()
+        .unwrap_or(0);
 
     let available_commands = COMMANDS
         .iter()
@@ -39,7 +43,10 @@ fn generate_usage() -> String {
         .collect::<Vec<_>>()
         .join("\n");
 
-    format!("usage: core <command> [arguments...]\n\nAvailable commands:\n{}", available_commands)
+    format!(
+        "usage: core <command> [arguments...]\n\nAvailable commands:\n{}",
+        available_commands
+    )
 }
 
 #[entry::gen("no_prelude")]

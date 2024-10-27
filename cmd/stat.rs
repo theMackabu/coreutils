@@ -68,9 +68,24 @@ fn entry() -> ! {
         match fs::metadata(&file) {
             Ok(metadata) => {
                 println!("  File: {}", file.display());
-                println!("  Size: {:>10}    Blocks: {:>10}    IO Block: {:>10}", metadata.len(), metadata.blocks(), metadata.blksize(),);
-                println!("Device: {:>10}    Inode: {:>11}    Links: {:>10}", metadata.dev(), metadata.ino(), metadata.nlink());
-                println!("Access: {}    Uid: {:>13}    Gid: {:>13}", format_mode(metadata.mode()), metadata.uid(), metadata.gid());
+                println!(
+                    "  Size: {:>10}    Blocks: {:>10}    IO Block: {:>10}",
+                    metadata.len(),
+                    metadata.blocks(),
+                    metadata.blksize(),
+                );
+                println!(
+                    "Device: {:>10}    Inode: {:>11}    Links: {:>10}",
+                    metadata.dev(),
+                    metadata.ino(),
+                    metadata.nlink()
+                );
+                println!(
+                    "Access: {}    Uid: {:>13}    Gid: {:>13}",
+                    format_mode(metadata.mode()),
+                    metadata.uid(),
+                    metadata.gid()
+                );
                 println!("Access: {}", format_time(metadata.atime()));
                 println!("Modify: {}", format_time(metadata.mtime()));
                 println!("Change: {}", format_time(metadata.ctime()));

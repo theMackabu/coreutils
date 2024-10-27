@@ -29,7 +29,16 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
         }
 
         if options.show_nonprinting {
-            line = line.chars().map(|c| if c.is_ascii_control() && c != '\t' && c != '\n' { (c as u8 + 64) as char } else { c }).collect();
+            line = line
+                .chars()
+                .map(|c| {
+                    if c.is_ascii_control() && c != '\t' && c != '\n' {
+                        (c as u8 + 64) as char
+                    } else {
+                        c
+                    }
+                })
+                .collect();
         }
 
         if options.show_tabs {

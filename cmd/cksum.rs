@@ -14,9 +14,17 @@ fn crc32_filltable(endian: bool) -> [u32; 256] {
         let mut c = if endian { (i as u32) << 24 } else { i as u32 };
         for _ in 0..8 {
             if endian {
-                c = if (c & 0x80000000) != 0 { (c << 1) ^ polynomial } else { c << 1 };
+                c = if (c & 0x80000000) != 0 {
+                    (c << 1) ^ polynomial
+                } else {
+                    c << 1
+                };
             } else {
-                c = if (c & 1) != 0 { (c >> 1) ^ polynomial } else { c >> 1 };
+                c = if (c & 1) != 0 {
+                    (c >> 1) ^ polynomial
+                } else {
+                    c >> 1
+                };
             }
         }
         table[i] = c;

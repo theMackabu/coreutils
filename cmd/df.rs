@@ -75,19 +75,31 @@ fn format_size(size: u64, use_512_blocks: bool) -> String {
 
 #[cfg(target_os = "macos")]
 fn print_df(statfs_buf: &Statfs, use_512_blocks: bool) -> io::Result<()> {
-    let block_size = if use_512_blocks { 512 } else { statfs_buf.f_bsize as u64 };
+    let block_size = if use_512_blocks {
+        512
+    } else {
+        statfs_buf.f_bsize as u64
+    };
 
     let total = statfs_buf.f_blocks * block_size / 512;
     let available = statfs_buf.f_bavail * block_size / 512;
     let used = total - (statfs_buf.f_bfree * block_size / 512);
-    let capacity = if total > 0 { (used as f64 / total as f64 * 100.0) as u64 } else { 0 };
+    let capacity = if total > 0 {
+        (used as f64 / total as f64 * 100.0) as u64
+    } else {
+        0
+    };
 
     let filesystem = unsafe { CStr::from_ptr(statfs_buf.f_mntfromname.as_ptr()).to_string_lossy() };
     let mount_point = unsafe { CStr::from_ptr(statfs_buf.f_mntonname.as_ptr()).to_string_lossy() };
 
     let iused = statfs_buf.f_files - statfs_buf.f_ffree;
     let ifree = statfs_buf.f_ffree;
-    let iused_percent = if statfs_buf.f_files > 0 { (iused as f64 / statfs_buf.f_files as f64 * 100.0) as u64 } else { 0 };
+    let iused_percent = if statfs_buf.f_files > 0 {
+        (iused as f64 / statfs_buf.f_files as f64 * 100.0) as u64
+    } else {
+        0
+    };
 
     println!(
         "{:<15} {:>10} {:>10} {:>10} {:>3}% {:>7} {:>9} {:>5}%  {}",
@@ -108,28 +120,40 @@ fn print_df(statfs_buf: &Statfs, use_512_blocks: bool) -> io::Result<()> {
 #[cfg(target_os = "linux")]
 fn print_df(mntent: &libc::mntent, use_512_blocks: bool) -> io::Result<()> {
     let mut statfs_buf: Statfs = unsafe { mem::zeroed() };
-    
+
     let mount_dir = unsafe { CStr::from_ptr(mntent.mnt_dir) };
     let path = Path::new(OsStr::from_bytes(mount_dir.to_bytes()));
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    
+
     if unsafe { statfs(c_path.as_ptr(), &mut statfs_buf) } == -1 {
         return Err(io::Error::last_os_error());
     }
 
-    let block_size = if use_512_blocks { 512 } else { statfs_buf.f_bsize as u64 };
+    let block_size = if use_512_blocks {
+        512
+    } else {
+        statfs_buf.f_bsize as u64
+    };
 
     let total = statfs_buf.f_blocks * block_size / 512;
     let available = statfs_buf.f_bavail * block_size / 512;
     let used = total - (statfs_buf.f_bfree * block_size / 512);
-    let capacity = if total > 0 { (used as f64 / total as f64 * 100.0) as u64 } else { 0 };
+    let capacity = if total > 0 {
+        (used as f64 / total as f64 * 100.0) as u64
+    } else {
+        0
+    };
 
     let filesystem = unsafe { CStr::from_ptr(mntent.mnt_fsname).to_string_lossy() };
     let mount_point = unsafe { CStr::from_ptr(mntent.mnt_dir).to_string_lossy() };
 
     let iused = statfs_buf.f_files - statfs_buf.f_ffree;
     let ifree = statfs_buf.f_ffree;
-    let iused_percent = if statfs_buf.f_files > 0 { (iused as f64 / statfs_buf.f_files as f64 * 100.0) as u64 } else { 0 };
+    let iused_percent = if statfs_buf.f_files > 0 {
+        (iused as f64 / statfs_buf.f_files as f64 * 100.0) as u64
+    } else {
+        0
+    };
 
     println!(
         "{:<15} {:>10} {:>10} {:>10} {:>3}% {:>7} {:>9} {:>5}%  {}",
@@ -162,7 +186,15 @@ fn entry() -> ! {
 
     println!(
         "{:<15} {:>10} {:>10} {:>10} {:>3} {:>7} {:>9} {:>5}  {}",
-        "Filesystem", "512-blocks", "Used", "Available", "Capacity", "iused", "ifree", "%iused", "Mounted on"
+        "Filesystem",
+        "512-blocks",
+        "Used",
+        "Available",
+        "Capacity",
+        "iused",
+        "ifree",
+        "%iused",
+        "Mounted on"
     );
 
     #[cfg(target_os = "macos")]
