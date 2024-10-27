@@ -138,22 +138,33 @@ impl DateTime {
     }
 
     pub fn format(&self, fmt: &str) -> String {
-        fmt.replace("%D", &format!("{:02}/{:02}/{:02}", self.month(), self.day(), self.year() % 100))
-            .replace("%Y", &self.year().to_string())
-            .replace("%m", &format!("{:02}", self.month()))
-            .replace("%B", &MONTH_NAMES[self.month() as usize - 1])
-            .replace("%b", &SHORT_MONTH_NAMES[self.month() as usize - 1])
-            .replace("%d", &format!("{:02}", self.day()))
-            .replace("%r", &format!("{}{}", if self.day() < 10 { " " } else { "" }, self.day()))
-            .replace("%j", &format!("{:03}", self.day_of_year()))
-            .replace("%u", &self.day_of_week().to_string())
-            .replace("%A", &WEEKDAY_NAMES[self.day_of_week() as usize - 2])
-            .replace("%a", &SHORT_WEEKDAY_NAMES[self.day_of_week() as usize - 2])
-            .replace("%H", &format!("{:02}", self.hour()))
-            .replace("%I", &format!("{:02}", (self.hour() % 12).max(1)))
-            .replace("%M", &format!("{:02}", self.minute()))
-            .replace("%S", &format!("{:02}", self.second()))
-            .replace("%Z", &self.timezone)
+        fmt.replace(
+            "%D",
+            &format!(
+                "{:02}/{:02}/{:02}",
+                self.month(),
+                self.day(),
+                self.year() % 100
+            ),
+        )
+        .replace("%Y", &self.year().to_string())
+        .replace("%m", &format!("{:02}", self.month()))
+        .replace("%B", &MONTH_NAMES[self.month() as usize - 1])
+        .replace("%b", &SHORT_MONTH_NAMES[self.month() as usize - 1])
+        .replace("%d", &format!("{:02}", self.day()))
+        .replace(
+            "%r",
+            &format!("{}{}", if self.day() < 10 { " " } else { "" }, self.day()),
+        )
+        .replace("%j", &format!("{:03}", self.day_of_year()))
+        .replace("%u", &self.day_of_week().to_string())
+        .replace("%A", &WEEKDAY_NAMES[self.day_of_week() as usize - 2])
+        .replace("%a", &SHORT_WEEKDAY_NAMES[self.day_of_week() as usize - 2])
+        .replace("%H", &format!("{:02}", self.hour()))
+        .replace("%I", &format!("{:02}", (self.hour() % 12).max(1)))
+        .replace("%M", &format!("{:02}", self.minute()))
+        .replace("%S", &format!("{:02}", self.second()))
+        .replace("%Z", &self.timezone)
     }
 
     pub fn add_days(&mut self, days: i64) {
@@ -161,7 +172,30 @@ impl DateTime {
     }
 }
 
-const MONTH_NAMES: [&str; 12] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const SHORT_MONTH_NAMES: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const WEEKDAY_NAMES: [&str; 7] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const MONTH_NAMES: [&str; 12] = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+const SHORT_MONTH_NAMES: [&str; 12] = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+const WEEKDAY_NAMES: [&str; 7] = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+];
 const SHORT_WEEKDAY_NAMES: [&str; 7] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];

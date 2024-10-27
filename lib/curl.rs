@@ -47,7 +47,8 @@ pub type curl_socket_t = c_int;
 pub const CURL_SOCKET_BAD: curl_socket_t = -1;
 
 pub type curlfiletype = __enum_ty;
-pub type curl_progress_callback = extern "C" fn(*mut c_void, c_double, c_double, c_double, c_double) -> c_int;
+pub type curl_progress_callback =
+    extern "C" fn(*mut c_void, c_double, c_double, c_double, c_double) -> c_int;
 pub type curl_write_callback = extern "C" fn(*mut c_char, size_t, size_t, *mut c_void) -> size_t;
 
 pub const CURL_WRITEFUNC_PAUSE: size_t = 0x10000001;
@@ -152,7 +153,8 @@ pub const CURLINFO_DATA_OUT: curl_infotype = 4;
 pub const CURLINFO_SSL_DATA_IN: curl_infotype = 5;
 pub const CURLINFO_SSL_DATA_OUT: curl_infotype = 6;
 
-pub type curl_debug_callback = extern "C" fn(*mut CURL, curl_infotype, *mut c_char, size_t, *mut c_void) -> c_int;
+pub type curl_debug_callback =
+    extern "C" fn(*mut CURL, curl_infotype, *mut c_char, size_t, *mut c_void) -> c_int;
 
 pub const CURLE_OK: CURLcode = 0;
 pub const CURLE_UNSUPPORTED_PROTOCOL: CURLcode = 1;
@@ -603,7 +605,8 @@ pub const CURL_FORMADD_DISABLED: CURLFORMcode = 7;
 pub const CURL_REDIR_POST_301: c_ulong = 1;
 pub const CURL_REDIR_POST_302: c_ulong = 2;
 pub const CURL_REDIR_POST_303: c_ulong = 4;
-pub const CURL_REDIR_POST_ALL: c_ulong = CURL_REDIR_POST_301 | CURL_REDIR_POST_302 | CURL_REDIR_POST_303;
+pub const CURL_REDIR_POST_ALL: c_ulong =
+    CURL_REDIR_POST_301 | CURL_REDIR_POST_302 | CURL_REDIR_POST_303;
 
 #[repr(C)]
 pub struct curl_forms {
@@ -702,7 +705,8 @@ pub const CURL_LOCK_ACCESS_NONE: curl_lock_access = 0;
 pub const CURL_LOCK_ACCESS_SHARED: curl_lock_access = 1;
 pub const CURL_LOCK_ACCESS_SINGLE: curl_lock_access = 2;
 
-pub type curl_lock_function = extern "C" fn(*mut CURL, curl_lock_data, curl_lock_access, *mut c_void);
+pub type curl_lock_function =
+    extern "C" fn(*mut CURL, curl_lock_data, curl_lock_access, *mut c_void);
 pub type curl_unlock_function = extern "C" fn(*mut CURL, curl_lock_data, *mut c_void);
 
 pub enum CURLSH {}
@@ -843,7 +847,8 @@ pub const CURL_CSELECT_OUT: c_int = 2;
 pub const CURL_CSELECT_ERR: c_int = 4;
 pub const CURL_SOCKET_TIMEOUT: curl_socket_t = CURL_SOCKET_BAD;
 
-pub type curl_socket_callback = extern "C" fn(*mut CURL, curl_socket_t, c_int, *mut c_void, *mut c_void) -> c_int;
+pub type curl_socket_callback =
+    extern "C" fn(*mut CURL, curl_socket_t, c_int, *mut c_void, *mut c_void) -> c_int;
 pub type curl_multi_timer_callback = extern "C" fn(*mut CURLM, c_long, *mut c_void) -> c_int;
 
 pub type CURLMoption = __enum_ty;
@@ -870,7 +875,8 @@ pub const CURLPIPE_MULTIPLEX: c_long = 2;
 
 pub const CURL_ERROR_SIZE: usize = 256;
 
-pub type curl_opensocket_callback = extern "C" fn(*mut c_void, curlsocktype, *mut curl_sockaddr) -> curl_socket_t;
+pub type curl_opensocket_callback =
+    extern "C" fn(*mut c_void, curlsocktype, *mut curl_sockaddr) -> curl_socket_t;
 pub type curlsocktype = __enum_ty;
 pub const CURLSOCKTYPE_IPCXN: curlsocktype = 0;
 pub const CURLSOCKTYPE_ACCEPT: curlsocktype = 1;
@@ -893,18 +899,39 @@ pub struct curl_sockaddr {
 
 #[link(name = "curl")]
 extern "C" {
-    pub fn curl_formadd(httppost: *mut *mut curl_httppost, last_post: *mut *mut curl_httppost, ...) -> CURLFORMcode;
-    pub fn curl_formget(form: *mut curl_httppost, arg: *mut c_void, append: curl_formget_callback) -> c_int;
+    pub fn curl_formadd(
+        httppost: *mut *mut curl_httppost,
+        last_post: *mut *mut curl_httppost,
+        ...
+    ) -> CURLFORMcode;
+    pub fn curl_formget(
+        form: *mut curl_httppost,
+        arg: *mut c_void,
+        append: curl_formget_callback,
+    ) -> c_int;
     pub fn curl_formfree(form: *mut curl_httppost);
 
     pub fn curl_version() -> *mut c_char;
 
-    pub fn curl_easy_escape(handle: *mut CURL, string: *const c_char, length: c_int) -> *mut c_char;
-    pub fn curl_easy_unescape(handle: *mut CURL, string: *const c_char, length: c_int, outlength: *mut c_int) -> *mut c_char;
+    pub fn curl_easy_escape(handle: *mut CURL, string: *const c_char, length: c_int)
+        -> *mut c_char;
+    pub fn curl_easy_unescape(
+        handle: *mut CURL,
+        string: *const c_char,
+        length: c_int,
+        outlength: *mut c_int,
+    ) -> *mut c_char;
     pub fn curl_free(p: *mut c_void);
 
     pub fn curl_global_init(flags: c_long) -> CURLcode;
-    pub fn curl_global_init_mem(flags: c_long, m: curl_malloc_callback, f: curl_free_callback, r: curl_realloc_callback, s: curl_strdup_callback, c: curl_calloc_callback) -> CURLcode;
+    pub fn curl_global_init_mem(
+        flags: c_long,
+        m: curl_malloc_callback,
+        f: curl_free_callback,
+        r: curl_realloc_callback,
+        s: curl_strdup_callback,
+        c: curl_calloc_callback,
+    ) -> CURLcode;
     pub fn curl_global_cleanup();
 
     pub fn curl_slist_append(list: *mut curl_slist, val: *const c_char) -> *mut curl_slist;
@@ -930,26 +957,73 @@ extern "C" {
     pub fn curl_easy_getinfo(curl: *mut CURL, info: CURLINFO, ...) -> CURLcode;
     pub fn curl_easy_duphandle(curl: *mut CURL) -> *mut CURL;
     pub fn curl_easy_reset(curl: *mut CURL);
-    pub fn curl_easy_recv(curl: *mut CURL, buffer: *mut c_void, buflen: size_t, n: *mut size_t) -> CURLcode;
-    pub fn curl_easy_send(curl: *mut CURL, buffer: *const c_void, buflen: size_t, n: *mut size_t) -> CURLcode;
+    pub fn curl_easy_recv(
+        curl: *mut CURL,
+        buffer: *mut c_void,
+        buflen: size_t,
+        n: *mut size_t,
+    ) -> CURLcode;
+    pub fn curl_easy_send(
+        curl: *mut CURL,
+        buffer: *const c_void,
+        buflen: size_t,
+        n: *mut size_t,
+    ) -> CURLcode;
 
     pub fn curl_multi_init() -> *mut CURLM;
     pub fn curl_multi_add_handle(multi_handle: *mut CURLM, curl_handle: *mut CURL) -> CURLMcode;
     pub fn curl_multi_remove_handle(multi_handle: *mut CURLM, curl_handle: *mut CURL) -> CURLMcode;
-    pub fn curl_multi_fdset(multi_handle: *mut CURLM, read_fd_set: *mut fd_set, write_fd_set: *mut fd_set, exc_fd_set: *mut fd_set, max_fd: *mut c_int) -> CURLMcode;
-    pub fn curl_multi_wait(multi_handle: *mut CURLM, extra_fds: *mut curl_waitfd, extra_nfds: c_uint, timeout_ms: c_int, ret: *mut c_int) -> CURLMcode;
-    pub fn curl_multi_poll(multi_handle: *mut CURLM, extra_fds: *mut curl_waitfd, extra_nfds: c_uint, timeout_ms: c_int, ret: *mut c_int) -> CURLMcode;
+    pub fn curl_multi_fdset(
+        multi_handle: *mut CURLM,
+        read_fd_set: *mut fd_set,
+        write_fd_set: *mut fd_set,
+        exc_fd_set: *mut fd_set,
+        max_fd: *mut c_int,
+    ) -> CURLMcode;
+    pub fn curl_multi_wait(
+        multi_handle: *mut CURLM,
+        extra_fds: *mut curl_waitfd,
+        extra_nfds: c_uint,
+        timeout_ms: c_int,
+        ret: *mut c_int,
+    ) -> CURLMcode;
+    pub fn curl_multi_poll(
+        multi_handle: *mut CURLM,
+        extra_fds: *mut curl_waitfd,
+        extra_nfds: c_uint,
+        timeout_ms: c_int,
+        ret: *mut c_int,
+    ) -> CURLMcode;
     pub fn curl_multi_wakeup(multi_handle: *mut CURLM) -> CURLMcode;
     pub fn curl_multi_perform(multi_handle: *mut CURLM, running_handles: *mut c_int) -> CURLMcode;
     pub fn curl_multi_cleanup(multi_handle: *mut CURLM) -> CURLMcode;
-    pub fn curl_multi_info_read(multi_handle: *mut CURLM, msgs_in_queue: *mut c_int) -> *mut CURLMsg;
+    pub fn curl_multi_info_read(
+        multi_handle: *mut CURLM,
+        msgs_in_queue: *mut c_int,
+    ) -> *mut CURLMsg;
     pub fn curl_multi_strerror(code: CURLMcode) -> *const c_char;
-    pub fn curl_multi_socket(multi_handle: *mut CURLM, s: curl_socket_t, running_handles: *mut c_int) -> CURLMcode;
-    pub fn curl_multi_socket_action(multi_handle: *mut CURLM, s: curl_socket_t, ev_bitmask: c_int, running_handles: *mut c_int) -> CURLMcode;
-    pub fn curl_multi_socket_all(multi_handle: *mut CURLM, running_handles: *mut c_int) -> CURLMcode;
+    pub fn curl_multi_socket(
+        multi_handle: *mut CURLM,
+        s: curl_socket_t,
+        running_handles: *mut c_int,
+    ) -> CURLMcode;
+    pub fn curl_multi_socket_action(
+        multi_handle: *mut CURLM,
+        s: curl_socket_t,
+        ev_bitmask: c_int,
+        running_handles: *mut c_int,
+    ) -> CURLMcode;
+    pub fn curl_multi_socket_all(
+        multi_handle: *mut CURLM,
+        running_handles: *mut c_int,
+    ) -> CURLMcode;
     pub fn curl_multi_timeout(multi_handle: *mut CURLM, milliseconds: *mut c_long) -> CURLMcode;
     pub fn curl_multi_setopt(multi_handle: *mut CURLM, option: CURLMoption, ...) -> CURLMcode;
-    pub fn curl_multi_assign(multi_handle: *mut CURLM, sockfd: curl_socket_t, sockp: *mut c_void) -> CURLMcode;
+    pub fn curl_multi_assign(
+        multi_handle: *mut CURLM,
+        sockfd: curl_socket_t,
+        sockp: *mut c_void,
+    ) -> CURLMcode;
 }
 
 pub enum WriteError {
@@ -1027,7 +1101,9 @@ pub mod list {
 
     impl List {
         pub fn new() -> List {
-            List { raw: ptr::null_mut() }
+            List {
+                raw: ptr::null_mut(),
+            }
         }
 
         pub fn append(&mut self, data: &str) -> Result<(), Error> {
@@ -1041,13 +1117,18 @@ pub mod list {
         }
 
         pub fn iter(&self) -> Iter {
-            Iter { _me: self, cur: self.raw }
+            Iter {
+                _me: self,
+                cur: self.raw,
+            }
         }
     }
 
     impl fmt::Debug for List {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            f.debug_list().entries(self.iter().map(String::from_utf8_lossy)).finish()
+            f.debug_list()
+                .entries(self.iter().map(String::from_utf8_lossy))
+                .finish()
         }
     }
 
@@ -1084,7 +1165,9 @@ pub mod list {
 
     impl<'a> fmt::Debug for Iter<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            f.debug_list().entries(self.clone().map(String::from_utf8_lossy)).finish()
+            f.debug_list()
+                .entries(self.clone().map(String::from_utf8_lossy))
+                .finish()
         }
     }
 }
@@ -1349,7 +1432,10 @@ impl error::Error for Error {}
 
 impl From<ffi::NulError> for Error {
     fn from(_: ffi::NulError) -> Error {
-        Error { code: CURLE_CONV_FAILED, extra: None }
+        Error {
+            code: CURLE_CONV_FAILED,
+            extra: None,
+        }
     }
 }
 

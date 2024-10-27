@@ -63,7 +63,10 @@ unsafe fn environ() -> *mut *const *const libc::c_char {
     std::ptr::addr_of_mut!(environ)
 }
 
-unsafe fn run_with_cstr_stack<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> {
+unsafe fn run_with_cstr_stack<T>(
+    bytes: &[u8],
+    f: &dyn Fn(&CStr) -> io::Result<T>,
+) -> io::Result<T> {
     let mut buf = MaybeUninit::<[u8; MAX_STACK_ALLOCATION]>::uninit();
     let buf_ptr = buf.as_mut_ptr() as *mut u8;
 
@@ -74,7 +77,10 @@ unsafe fn run_with_cstr_stack<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T
 
     match CStr::from_bytes_with_nul(unsafe { slice::from_raw_parts(buf_ptr, bytes.len() + 1) }) {
         Ok(s) => f(s),
-        Err(_) => Err(io::Error::new(io::ErrorKind::InvalidInput, "file name contained an unexpected NUL byte")),
+        Err(_) => Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "file name contained an unexpected NUL byte",
+        )),
     }
 }
 
@@ -83,7 +89,10 @@ unsafe fn run_with_cstr_stack<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T
 fn run_with_cstr_allocating<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> {
     match CString::new(bytes) {
         Ok(s) => f(&s),
-        Err(_) => Err(io::Error::new(io::ErrorKind::InvalidInput, "file name contained an unexpected NUL byte")),
+        Err(_) => Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "file name contained an unexpected NUL byte",
+        )),
     }
 }
 
@@ -115,7 +124,10 @@ pub fn vars() -> Vec<String> {
             }
         }
 
-        return Vars { inner: result.into_iter() }.collect();
+        return Vars {
+            inner: result.into_iter(),
+        }
+        .collect();
     }
 
     fn parse(input: &[u8]) -> Option<OsString> {

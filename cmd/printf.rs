@@ -64,6 +64,8 @@ fn entry() -> ! {
     let arg_refs: Vec<&str> = args.iter().map(AsRef::as_ref).collect();
     let formatted = parse_format(&format, &arg_refs);
 
-    io::stdout().write_all(formatted.as_bytes()).expect("expected to write to stdout");
+    io::stdout()
+        .write_all(formatted.as_bytes())
+        .expect("expected to write to stdout");
     io::stdout().flush().expect("expected to flush stdout");
 }

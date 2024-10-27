@@ -25,7 +25,12 @@ fn parse_url(url: &str) -> Result<(String, String, u16, String), Box<dyn Error>>
         (host, if scheme == "https" { 443 } else { 80 })
     };
 
-    Ok((scheme.to_string(), host.to_string(), port, format!("/{}", path)))
+    Ok((
+        scheme.to_string(),
+        host.to_string(),
+        port,
+        format!("/{}", path),
+    ))
 }
 
 fn send_request(host: &str, port: u16, path: &str) -> Result<String, Box<dyn Error>> {

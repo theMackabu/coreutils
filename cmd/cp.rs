@@ -47,7 +47,10 @@ fn cp(source: &Path, destination: &Path, options: &CpOptions) -> Result<(), Box<
 
     if source.is_dir() {
         if !options.recursive {
-            error!("cp: -r not specified; omitting directory '{}'", source.display());
+            error!(
+                "cp: -r not specified; omitting directory '{}'",
+                source.display()
+            );
         }
         fs::create_dir_all(destination)?;
         for entry in fs::read_dir(source)? {
@@ -112,7 +115,12 @@ fn entry() -> ! {
         };
 
         if let Err(err) = cp(source, &dest, &options) {
-            error!("cp: cannot copy '{}' to '{}': {}", source.display(), dest.display(), err);
+            error!(
+                "cp: cannot copy '{}' to '{}': {}",
+                source.display(),
+                dest.display(),
+                err
+            );
         }
     }
 }

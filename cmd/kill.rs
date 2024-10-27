@@ -38,7 +38,11 @@ fn entry() -> ! {
 
     for pid in pids {
         if kill(pid, signal) == -1 {
-            error!("kill: failed to send signal to process {}: {}", pid, io::Error::last_os_error());
+            error!(
+                "kill: failed to send signal to process {}: {}",
+                pid,
+                io::Error::last_os_error()
+            );
         }
     }
 }

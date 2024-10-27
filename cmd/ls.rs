@@ -53,7 +53,9 @@ fn format_mode(mode: u32) -> String {
 }
 
 fn format_time(time: SystemTime) -> String {
-    let since = time.duration_since(UNIX_EPOCH).unwrap_or(Duration::from_secs(0));
+    let since = time
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or(Duration::from_secs(0));
     let dt = DateTime::from_secs(since.as_secs() as i64, false);
 
     dt.format("%Y %b %r %H:%M")
@@ -97,23 +99,45 @@ fn list_directory(path: &Path, options: &LsOptions) -> Result<Vec<FileInfo>, Box
 
     if options.all {
         if let Ok(metadata) = fs::metadata(path) {
-            entries.insert(0, FileInfo { path: PathBuf::from("."), metadata });
+            entries.insert(
+                0,
+                FileInfo {
+                    path: PathBuf::from("."),
+                    metadata,
+                },
+            );
         }
 
         if let Some(parent_path) = path.parent() {
             if let Ok(metadata) = fs::metadata(parent_path) {
-                entries.insert(1, FileInfo { path: PathBuf::from(".."), metadata });
+                entries.insert(
+                    1,
+                    FileInfo {
+                        path: PathBuf::from(".."),
+                        metadata,
+                    },
+                );
             }
         } else {
             if let Ok(metadata) = fs::metadata(path) {
-                entries.insert(1, FileInfo { path: PathBuf::from(".."), metadata });
+                entries.insert(
+                    1,
+                    FileInfo {
+                        path: PathBuf::from(".."),
+                        metadata,
+                    },
+                );
             }
         }
     }
 
     entries.sort_by(|a, b| {
         if options.sort_by_time {
-            let order = b.metadata.modified().unwrap().cmp(&a.metadata.modified().unwrap());
+            let order = b
+                .metadata
+                .modified()
+                .unwrap()
+                .cmp(&a.metadata.modified().unwrap());
             if options.reverse {
                 order.reverse()
             } else {
@@ -144,21 +168,41 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
             let gid = entry.metadata.gid();
             let size = format_size(entry.metadata.size(), options.human_readable);
             let time = format_time(entry.metadata.modified()?);
-            let name = entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy();
+            let name = entry
+                .path
+                .file_name()
+                .unwrap_or(entry.path.as_os_str())
+                .to_string_lossy();
 
-            println!("{} {:>3} {:>5} {:>5} {:>6} {} {}", mode, nlink, uid, gid, size, time, name);
+            println!(
+                "{} {:>3} {:>5} {:>5} {:>6} {} {}",
+                mode, nlink, uid, gid, size, time, name
+            );
         }
     } else {
         let max_width = entries
             .iter()
-            .map(|entry| entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_str().unwrap_or("").len())
+            .map(|entry| {
+                entry
+                    .path
+                    .file_name()
+                    .unwrap_or(entry.path.as_os_str())
+                    .to_str()
+                    .unwrap_or("")
+                    .len()
+            })
             .max()
             .unwrap_or(0);
 
         let column_width = max_width + 3;
-        let terminal_width = std::env::var("COLUMNS").map(|s| s.parse().unwrap_or(80)).unwrap_or(80);
+        let terminal_width = std::env::var("COLUMNS")
+            .map(|s| s.parse().unwrap_or(80))
+            .unwrap_or(80);
 
-        let columns = std::cmp::min((terminal_width + column_width) / column_width, entries.len());
+        let columns = std::cmp::min(
+            (terminal_width + column_width) / column_width,
+            entries.len(),
+        );
         let rows = (entries.len() + columns - 1) / columns;
 
         let mut grid: Vec<Vec<&str>> = vec![vec![]; rows];

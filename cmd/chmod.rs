@@ -72,15 +72,25 @@ fn parse_mode(mode: &str, current_mode: u32) -> Result<u32, ChmodError> {
 }
 
 fn chmod_recursive(path: &Path, mode: &str, options: &ChmodOptions) -> io::Result<()> {
-    let metadata = if options.no_dereference { fs::symlink_metadata(path)? } else { fs::metadata(path)? };
+    let metadata = if options.no_dereference {
+        fs::symlink_metadata(path)?
+    } else {
+        fs::metadata(path)?
+    };
 
     let current_mode = metadata.permissions().mode();
-    let new_mode = parse_mode(mode, current_mode).map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.0))?;
+    let new_mode = parse_mode(mode, current_mode)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.0))?;
 
     fs::set_permissions(path, fs::Permissions::from_mode(new_mode))?;
 
     if options.verbose {
-        println!("changed '{}' mode from {:o} to {:o}", path.display(), current_mode, new_mode);
+        println!(
+            "changed '{}' mode from {:o} to {:o}",
+            path.display(),
+            current_mode,
+            new_mode
+        );
     }
 
     if metadata.is_dir() && options.recursive {

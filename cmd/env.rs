@@ -13,7 +13,10 @@ fn entry() -> ! {
     let env = env::vars().into_iter();
 
     let mut ignore_env = false;
-    let mut c_args: Vec<&str> = args.to_owned().map(|arg| from_utf8(arg).unwrap_or("?")).collect();
+    let mut c_args: Vec<&str> = args
+        .to_owned()
+        .map(|arg| from_utf8(arg).unwrap_or("?"))
+        .collect();
 
     let mut env_vars: HashMap<String, String> = env
         .filter_map(|line| {

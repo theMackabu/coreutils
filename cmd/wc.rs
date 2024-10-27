@@ -31,7 +31,10 @@ fn count_stdin(options: &WcOptions) -> Result<CountResult, Box<dyn Error>> {
     count_reader(&mut reader, options)
 }
 
-fn count_reader<R: Read>(reader: &mut R, options: &WcOptions) -> Result<CountResult, Box<dyn Error>> {
+fn count_reader<R: Read>(
+    reader: &mut R,
+    options: &WcOptions,
+) -> Result<CountResult, Box<dyn Error>> {
     let mut result = CountResult {
         bytes: 0,
         chars: 0,

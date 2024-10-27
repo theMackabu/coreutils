@@ -35,7 +35,11 @@ fn format_size(size: u64, human_readable: bool) -> String {
 }
 
 fn du(path: &Path, options: &DuOptions) -> Result<u64, Box<dyn Error>> {
-    let metadata = if options.dereference { fs::metadata(path)? } else { fs::symlink_metadata(path)? };
+    let metadata = if options.dereference {
+        fs::metadata(path)?
+    } else {
+        fs::symlink_metadata(path)?
+    };
     let mut total_size = metadata.blocks();
 
     if metadata.is_dir() {
@@ -46,10 +50,18 @@ fn du(path: &Path, options: &DuOptions) -> Result<u64, Box<dyn Error>> {
         }
 
         if !options.summarize || path == Path::new(".") {
-            println!("{}\t{}", format_size(total_size, options.human_readable), path.display());
+            println!(
+                "{}\t{}",
+                format_size(total_size, options.human_readable),
+                path.display()
+            );
         }
     } else if options.all {
-        println!("{}\t{}", format_size(total_size, options.human_readable), path.display());
+        println!(
+            "{}\t{}",
+            format_size(total_size, options.human_readable),
+            path.display()
+        );
     }
 
     Ok(total_size)

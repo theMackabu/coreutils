@@ -40,7 +40,10 @@ pub struct IdOptions {
     pub use_name: bool,
 }
 
-pub fn get_user_info(username: Option<&str>, group: Option<&str>) -> io::Result<(u32, u32, String)> {
+pub fn get_user_info(
+    username: Option<&str>,
+    group: Option<&str>,
+) -> io::Result<(u32, u32, String)> {
     unsafe {
         let passwd = match username {
             Some(name) => {
@@ -60,7 +63,9 @@ pub fn get_user_info(username: Option<&str>, group: Option<&str>) -> io::Result<
 
         let uid = (*passwd).pw_uid;
         let gid = (*passwd).pw_gid;
-        let name = CStr::from_ptr((*passwd).pw_name).to_string_lossy().into_owned();
+        let name = CStr::from_ptr((*passwd).pw_name)
+            .to_string_lossy()
+            .into_owned();
 
         Ok((uid, gid, name))
     }
@@ -83,7 +88,9 @@ pub fn get_group_name(gid: u32) -> io::Result<String> {
         if group.is_null() {
             return Err(io::Error::new(io::ErrorKind::NotFound, "Group not found"));
         }
-        Ok(CStr::from_ptr((*group).gr_name).to_string_lossy().into_owned())
+        Ok(CStr::from_ptr((*group).gr_name)
+            .to_string_lossy()
+            .into_owned())
     }
 }
 

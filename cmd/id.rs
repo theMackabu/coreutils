@@ -27,14 +27,23 @@ fn print_id(options: &IdOptions, username: Option<&str>, group: Option<&str>) ->
     } else if options.print_groups {
         let groups = get_groups()?;
         if options.use_name {
-            let group_names: Vec<String> = groups.iter().filter_map(|&gid| get_group_name(gid).ok()).collect();
+            let group_names: Vec<String> = groups
+                .iter()
+                .filter_map(|&gid| get_group_name(gid).ok())
+                .collect();
             println!("{}", group_names.join(" "));
         } else {
             let group_ids: Vec<String> = groups.iter().map(|&gid| gid.to_string()).collect();
             println!("{}", group_ids.join(" "));
         }
     } else {
-        print!("uid={}({}) gid={}({})", uid, name, gid, get_group_name(gid)?);
+        print!(
+            "uid={}({}) gid={}({})",
+            uid,
+            name,
+            gid,
+            get_group_name(gid)?
+        );
         let groups = get_groups()?;
         if !groups.is_empty() {
             print!(" groups=");

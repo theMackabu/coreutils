@@ -26,7 +26,11 @@ fn entry() -> ! {
 
     let path = file.unwrap_or_else(|| usage!("readlink: missing file operand"));
 
-    let result = if follow { fs::canonicalize(&path) } else { fs::read_link(&path) };
+    let result = if follow {
+        fs::canonicalize(&path)
+    } else {
+        fs::read_link(&path)
+    };
 
     match result {
         Ok(resolved_path) => println!("{}", resolved_path.display()),

@@ -28,7 +28,10 @@ extern "C" {
 }
 
 fn get_resource_usage() -> Rusage {
-    let time = Timeval { tv_sec: 0, tv_usec: 0 };
+    let time = Timeval {
+        tv_sec: 0,
+        tv_usec: 0,
+    };
 
     let mut usage = Rusage {
         ru_utime: time.to_owned(),
@@ -47,7 +50,9 @@ fn timeval_to_seconds(tv: &Timeval) -> f64 {
 
 #[entry::gen("bin", "safe")]
 fn entry() -> ! {
-    let args = args.map(|a| String::from_utf8_lossy(a).to_string()).collect::<Vec<_>>();
+    let args = args
+        .map(|a| String::from_utf8_lossy(a).to_string())
+        .collect::<Vec<_>>();
 
     if args.is_empty() {
         usage!("time: missing command");
@@ -74,5 +79,8 @@ fn print_time_info(program: &str, usage: Rusage, real_time: std::time::Duration)
     let real_time_secs = real_time.as_secs_f64();
     let cpu_usage = ((user_time + system_time) / real_time_secs * 100.0) as u32;
 
-    println!("{}  {:.2}s user {:.2}s system {}% cpu {:.3} total", program, user_time, system_time, cpu_usage, real_time_secs);
+    println!(
+        "{}  {:.2}s user {:.2}s system {}% cpu {:.3} total",
+        program, user_time, system_time, cpu_usage, real_time_secs
+    );
 }
