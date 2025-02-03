@@ -39,7 +39,13 @@ fn generate_usage() -> String {
         .collect::<Vec<_>>()
         .join("\n");
 
-    format!("usage: core <command> [arguments...]\n\nAvailable commands:\n{}", available_commands)
+    format!(
+        "core {} ({} {}) [multi-call binary]\n\nUsage: core <command> [arguments...]\n\nAvailable commands:\n{}",
+        env!("PKG_VERSION"),
+        env!("BUILD_DATE"),
+        env!("GIT_HASH"),
+        available_commands
+    )
 }
 
 #[entry::gen("no_prelude")]
