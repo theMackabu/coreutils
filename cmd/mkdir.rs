@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "bin", feature(start))]
+#![cfg_attr(feature = "bin", no_main)]
 
 extern crate entry;
 use std::{fs::exists, os::unix::fs::PermissionsExt};

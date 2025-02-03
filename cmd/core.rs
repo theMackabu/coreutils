@@ -1,5 +1,5 @@
-#![feature(start, rustc_private)]
-#![allow(clashing_extern_declarations)]
+#![no_main]
+#![feature(rustc_private)]
 
 extern crate entry;
 extern crate prelude;

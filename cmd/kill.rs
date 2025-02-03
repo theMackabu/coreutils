@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "bin", feature(start, rustc_private))]
+#![cfg_attr(feature = "bin", no_main, feature(rustc_private))]
 
 extern crate entry;
 

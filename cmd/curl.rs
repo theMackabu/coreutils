@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-#![cfg_attr(feature = "bin", feature(start))]
+#![cfg_attr(feature = "bin", no_main)]
 
 extern crate curl;
 extern crate entry;

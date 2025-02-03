@@ -34,8 +34,8 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let cfg_attr = quote! {
-        ?(is_bin => #[cfg_attr(feature = "bin", start)])
-        ?(!is_bin => #[start])
+        ?(!is_bin => #[no_mangle])
+        ?(is_bin => #[cfg_attr(feature = "bin", no_mangle)])
     };
 
     output.extend(imports);
@@ -49,7 +49,7 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
             TokenTree::Ident(ref _ident) if in_fn && !fn_name_changed => {
                 fn_name_changed = true;
-                output.extend(quote!(_start));
+                output.extend(quote!(main));
             }
             TokenTree::Group(ref group) if in_fn && group.delimiter() == Delimiter::Parenthesis => {
                 output.extend(quote!((argc: isize, argv: *const *const u8)));

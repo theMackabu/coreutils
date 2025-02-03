@@ -4,7 +4,7 @@ macro_rules! module {
         $(mod $name;)+
 
         fn modules() -> &'static [(&'static str, fn(argc: isize, argv: *const *const u8) -> isize)] {
-            &[$((stringify!($name), $name::_start),)+]
+            &[$((stringify!($name), $name::main),)+]
         }
 
         fn init_commands() -> &'static [(&'static str, &'static str)] {

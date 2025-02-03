@@ -1,5 +1,5 @@
 #![allow(non_camel_case_types)]
-#![cfg_attr(feature = "bin", feature(start))]
+#![cfg_attr(feature = "bin", no_main)]
 
 extern crate entry;
 extern crate env;
