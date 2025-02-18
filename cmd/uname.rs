@@ -67,18 +67,8 @@ fn get_macos_version() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 #[cfg(not(target_os = "macos"))]
-#[repr(C)]
-struct UtsName {
-    sysname: [u8; 65],
-    nodename: [u8; 65],
-    release: [u8; 65],
-    version: [u8; 65],
-    machine: [u8; 65],
-}
-
-#[cfg(not(target_os = "macos"))]
 extern "C" {
-    fn uname(buf: *mut UtsName) -> i32;
+    fn uname(buf: *mut libc::utsname) -> libc::c_int;
 }
 
 struct SysInfo {
@@ -107,7 +97,7 @@ fn get_sys_info() -> Result<SysInfo, Box<dyn std::error::Error>> {
     #[cfg(not(target_os = "macos"))]
     {
         use std::mem::MaybeUninit;
-        let mut uname_info: MaybeUninit<UtsName> = MaybeUninit::uninit();
+        let mut uname_info: MaybeUninit<libc::utsname> = MaybeUninit::uninit();
         if unsafe { uname(uname_info.as_mut_ptr()) } == 0 {
             let uname_info = unsafe { uname_info.assume_init() };
             Ok(SysInfo {
