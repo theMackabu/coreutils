@@ -45,7 +45,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        options: {
+        flags: {
             n => {
                 let lines = args.next().unwrap_or_else(|| usage!("tail: option requires an argument -- 'n'"));
                 num_lines = std::str::from_utf8(lines)
@@ -55,6 +55,7 @@ fn entry() -> ! {
             },
             f => live = true
         },
+        options: {},
         command: |arg| {
             if file_path.is_some() {
                 usage!("tail: only one input file may be specified");

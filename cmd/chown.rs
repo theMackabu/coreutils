@@ -46,9 +46,10 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             h => no_dereference = true
         },
+        options: {},
         command: |arg| {
             if owner_group.is_none() {
                 owner_group = Some(String::from_utf8_lossy(arg).into_owned());

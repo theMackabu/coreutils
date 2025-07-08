@@ -15,9 +15,10 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             u => now = DateTime::now(true)
         },
+        options: {},
         command: |arg| {
             let arg = String::from_utf8_lossy(arg).into_owned();
             if arg.starts_with('+') {

@@ -11,10 +11,11 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             L => physical = false,
             P => physical = true
         },
+        options: {},
         command: |_| usage!(),
         on_invalid: |arg| usage!("pwd: invalid option -- '{}'", arg as char)
     }

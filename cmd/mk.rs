@@ -125,7 +125,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        options: {
+        flags: {
             f => {
                 args.next();
                 options.mkfile = String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("mk: option requires an argument -- 'f'"))).into_owned();
@@ -139,6 +139,7 @@ fn entry() -> ! {
             s => options.sequential = true,
             t => options.touch = true
         },
+        options: {},
         command: |arg| targets.push(String::from_utf8_lossy(arg).into_owned()),
         on_invalid: |arg| usage!("mk: invalid option -- '{}'", arg as char)
     }

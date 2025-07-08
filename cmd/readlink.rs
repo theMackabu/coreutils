@@ -12,9 +12,10 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             f => follow = true
         },
+        options: {},
         command: |arg| {
             if file.is_some() {
                 usage!("readlink: too many arguments");

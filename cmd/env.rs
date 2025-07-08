@@ -30,9 +30,10 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             i => ignore_env = true
         },
+        options: {},
         command: |arg: &[u8]| {
             let arg = from_utf8(arg).unwrap_or("?");
             if let Some(pos) = arg.find('=') {

@@ -114,7 +114,7 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             f => options.force = true,
             h => options.no_dereference = true,
             v => options.verbose = true,
@@ -128,6 +128,7 @@ fn entry() -> ! {
             i => options.inherit_acl = true,
             I => options.no_inherit_acl = true
         },
+        options: {},
         command: |arg| {
             let arg = String::from_utf8_lossy(arg).into_owned();
             if mode.is_none() {

@@ -42,9 +42,10 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             s => silent = true
         },
+        options: {},
         command: |_| usage!(),
         on_invalid: |arg| usage!("tty: invalid option -- '{}'", arg as char)
     }

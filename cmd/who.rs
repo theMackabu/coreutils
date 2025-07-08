@@ -82,10 +82,11 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             a => show_all = true,
             H => show_headers = true
         },
+        options: {},
         command: |_| usage!(),
         on_invalid: |arg| usage!("who: invalid option -- '{}'", arg as char)
     }

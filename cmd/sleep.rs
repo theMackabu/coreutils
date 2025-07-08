@@ -38,6 +38,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        flags: {},
         options: {},
         command: |arg| {
             match parse_duration(&String::from_utf8_lossy(arg)) {

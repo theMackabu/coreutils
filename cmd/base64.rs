@@ -81,7 +81,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        options: {
+        flags: {
             d => decode = true,
             i => {
                 args.next();
@@ -94,6 +94,7 @@ fn entry() -> ! {
                 output_file = Some(PathBuf::from(OsStr::from_bytes(next)))
             }
         },
+        options: {},
         command: |arg| {
             if input_file.is_some() || input_string.is_some() {
                 usage!("base64: too many arguments");

@@ -157,6 +157,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        flags: {},
         options: {},
         command: |arg| files.push(PathBuf::from(OsStr::from_bytes(arg))),
         on_invalid: |arg| usage!("sha1sum: invalid option -- '{}'", arg as char)

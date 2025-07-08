@@ -563,7 +563,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        options: {
+        flags: {
             v => options.verbose = true,
             f => options.fail_fast = true,
             i => options.include_headers = true,
@@ -588,6 +588,7 @@ fn entry() -> ! {
                 options.data =  Some(Data { mime, body });
             }
         },
+        options: {},
         command: |arg| url = String::from_utf8_lossy(arg).into_owned(),
         on_invalid: |arg| usage!("curl: invalid option -- '{}'", arg as char)
     }

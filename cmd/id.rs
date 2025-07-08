@@ -65,7 +65,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        options: {
+        flags: {
             u => options.print_user = true,
             g => {
                 args.next();
@@ -77,6 +77,7 @@ fn entry() -> ! {
             G => options.print_groups = true,
             n => options.use_name = true
         },
+        options: {},
         command: |arg| {
             if username.is_some() {
                 usage!("id: too many arguments");

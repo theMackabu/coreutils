@@ -68,12 +68,13 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             a => options.all = true,
             h => options.human_readable = true,
             s => options.summarize = true,
             H => options.dereference = true
         },
+        options: {},
         command: |arg| paths.push(PathBuf::from(OsStr::from_bytes(arg))),
         on_invalid: |arg| usage!("du: invalid option -- '{arg}'")
     }

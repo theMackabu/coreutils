@@ -124,7 +124,7 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             a => {
                 print_sysname = true;
                 print_nodename = true;
@@ -140,6 +140,7 @@ fn entry() -> ! {
             m => print_machine = true,
             o => print_os = true
         },
+        options: {},
         command: |_| usage!(),
         on_invalid: |arg| usage!("uname: invalid option -- '{}'", arg as char)
     }

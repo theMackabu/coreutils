@@ -53,6 +53,11 @@ macro_rules! usage {
         eprintln!("{}", &*USAGE);
         std::process::exit(1)
     }};
+    (help->core) => {{
+        println!("{}", options_usage());
+        println!("{}", &*USAGE);
+        std::process::exit(0)
+    }};
     (help->$) => {{
         println!("{}", &*DESCRIPTION);
         println!("{}", &*USAGE);
@@ -110,7 +115,7 @@ macro_rules! entry {
 
         if s_args.program == b"core" {
             if s_args.args.is_empty() {
-                usage!(help->"\n{}", options_usage())
+                usage!(help->core)
             }
             s_args.program = s_args.args[0];
         }

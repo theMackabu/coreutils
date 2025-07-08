@@ -56,7 +56,7 @@ fn entry() -> ! {
     entry! {
         args: { argc, args, program, argv, caller: program },
         options: {
-            h | help: "Print help" => usage!(help->"\n{}", options_usage()),
+            h | help: "Print help" => usage!(help->core),
             v | version: "Print version" => stdout!("{} ({} {})", env!("PKG_VERSION"), env!("BUILD_DATE"), env!("GIT_HASH")),
         }
     }

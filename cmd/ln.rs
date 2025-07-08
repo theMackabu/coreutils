@@ -29,10 +29,11 @@ fn entry() -> ! {
 
     argument! {
         args,
-        options: {
+        flags: {
             s => symbolic = true,
             f => force = true
         },
+        options: {},
         command: |arg| {
             if target.is_none() {
                 target = Some(PathBuf::from(OsStr::from_bytes(arg)));
