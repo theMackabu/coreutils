@@ -53,9 +53,9 @@ macro_rules! usage {
         eprintln!("{}", &*USAGE);
         std::process::exit(1)
     }};
-    (help->$($arg:tt)*) => {{
+    (help->$) => {{
+        println!("{}", &*DESCRIPTION);
         println!("{}", &*USAGE);
-        println!($($arg)*);
         std::process::exit(0)
     }};
     ($($arg:tt)*) => {{
@@ -73,16 +73,25 @@ macro_rules! usage {
 #[macro_export]
 macro_rules! argument {
     (
-        args: $args:expr,
-        options: { $( $opt:ident => $set:expr ),* },
+        $args:expr,
+        flags: { $( $flag:ident => $set:expr ),* },
+        options: { $( $opt:ident => $func:expr ),* },
         command: $command:expr,
         on_invalid: $on_invalid:expr
     ) => {
-        for arg in $args {
+        let mut iter = $args.into_iter();
+        while let Some(arg) = iter.next() {
             if arg.starts_with(b"-") && arg.len() > 1 {
                 for &byte in &arg[1..] {
                     match byte {
-                        $(b if b == stringify!($opt).as_bytes()[0] => $set, )*
+                        $(b if b == stringify!($flag).as_bytes()[0] => $set, )*
+                        $(b if b == stringify!($opt).as_bytes()[0] => {
+                            if let Some(next_arg) = iter.next() {
+                                $func(next_arg);
+                            } else {
+                                $on_invalid(byte as char);
+                            }
+                        }, )*
                         _ => { $on_invalid(byte as char) }
                     }
                 }
