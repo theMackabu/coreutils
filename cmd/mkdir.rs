@@ -63,30 +63,32 @@ fn entry() -> ! {
         usage!();
     }
 
-    while let Some(arg) = args.next() {
-        match arg {
-            b"-m" => {
-                let bit = args.next().unwrap_or_else(|| error!("mkdir: option requires an argument -m"));
-                let mode_str = std::str::from_utf8(bit).unwrap_or_else(|_| error!("mkdir: invalid mode: {bit:?}"));
-                mode = u32::from_str_radix(mode_str, 8).unwrap_or_else(|_| error!("mkdir: invalid mode: {mode_str}"));
+    argument! {
+        args.to_owned(),
+        flags: {
+            p => recursive = true,
+            h => usage!(help->$)
+        },
+        options: {
+            m => |arg: &[u8]| {
+                mode = arg.iter().fold(0u32, |acc, &b| {
+                    match b {
+                        b'0'..=b'7' => acc * 8 + (b - b'0') as u32,
+                        _ => error!("mkdir: invalid mode: {arg:?}"),
+                    }
+                });
             }
-            b"-p" => recursive = true,
-            _ => directories.push(arg),
-        }
+        },
+        command: |arg| directories.push(arg),
+        on_invalid: |arg| usage!("mkdir: invalid option -- '{arg}'")
     }
 
     for &dir in &directories {
         let dir = Dir::new(dir, mode);
+        let result = if recursive { dir.recursive() } else { dir.save() };
 
-        match recursive {
-            true => match dir.recursive() {
-                Ok(code) => return code,
-                Err(err) => error!("mkdir: {:?}: {err}", dir.path),
-            },
-            false => match dir.save() {
-                Ok(code) => return code,
-                Err(err) => error!("mkdir: {:?}: {err}", dir.path),
-            },
+        if let Err(err) = result {
+            error!("mkdir: {:?}: {err}", dir.path);
         }
     }
 }
