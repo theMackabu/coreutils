@@ -25,6 +25,7 @@ struct FileInfo {
     metadata: Metadata,
 }
 
+#[inline]
 fn format_mode(mode: u32) -> String {
     let file_type = match mode & 0o170000 {
         0o040000 => 'd',
@@ -52,6 +53,7 @@ fn format_mode(mode: u32) -> String {
     result
 }
 
+#[inline]
 fn format_time(time: SystemTime) -> String {
     let since = time.duration_since(UNIX_EPOCH).unwrap_or(Duration::from_secs(0));
     let dt = DateTime::from_secs(since.as_secs() as i64, false);
@@ -59,6 +61,7 @@ fn format_time(time: SystemTime) -> String {
     dt.format("%Y %b %r %H:%M")
 }
 
+#[inline]
 fn format_size(size: u64, human_readable: bool) -> String {
     if human_readable {
         let units = ["B", "K", "M", "G", "T", "P"];
@@ -113,7 +116,10 @@ fn list_directory(path: &Path, options: &LsOptions) -> Result<Vec<FileInfo>, Box
 
     entries.sort_by(|a, b| {
         if options.sort_by_time {
-            let order = b.metadata.modified().unwrap().cmp(&a.metadata.modified().unwrap());
+            let a_time = a.metadata.modified().unwrap_or_else(|_| SystemTime::now());
+            let b_time = b.metadata.modified().unwrap_or_else(|_| SystemTime::now());
+            let order = b_time.cmp(&a_time);
+
             if options.reverse {
                 order.reverse()
             } else {
@@ -140,25 +146,33 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
         for entry in entries {
             let mode = format_mode(entry.metadata.mode());
             let nlink = entry.metadata.nlink();
+
             let uid = entry.metadata.uid();
             let gid = entry.metadata.gid();
             let size = format_size(entry.metadata.size(), options.human_readable);
-            let time = format_time(entry.metadata.modified()?);
-            let name = entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy();
 
+            let modified_time = entry.metadata.modified().unwrap_or_else(|_| SystemTime::now());
+            let time = format_time(modified_time);
+
+            let name = entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_string_lossy();
             println!("{} {:>3} {:>5} {:>5} {:>6} {} {}", mode, nlink, uid, gid, size, time, name);
         }
     } else {
         let max_width = entries
             .iter()
-            .map(|entry| entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_str().unwrap_or("").len())
+            .map(|entry| entry.path.file_name().unwrap_or(entry.path.as_os_str()).to_str().map(|s| s.len()).unwrap_or(0))
             .max()
             .unwrap_or(0);
 
         let column_width = max_width + 3;
-        let terminal_width = std::env::var("COLUMNS").map(|s| s.parse().unwrap_or(80)).unwrap_or(80);
+        lazy_lock! {
+            static TERMINAL_WIDTH: usize = std::env::var("COLUMNS")
+                .ok()
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(80);
+        }
 
-        let columns = std::cmp::min((terminal_width + column_width) / column_width, entries.len());
+        let columns = std::cmp::min((*TERMINAL_WIDTH + column_width) / column_width, entries.len());
         let rows = (entries.len() + columns - 1) / columns;
 
         let mut grid: Vec<Vec<&str>> = vec![vec![]; rows];
@@ -172,7 +186,9 @@ fn display_entries(entries: &[FileInfo], options: &LsOptions) -> Result<(), Box<
                 grid[row].resize(col + 1, "");
             }
 
-            grid[row][col] = name.to_str().unwrap_or("");
+            if let Some(name_str) = name.to_str() {
+                grid[row][col] = name_str;
+            }
         }
 
         for row in 0..rows {
@@ -201,14 +217,15 @@ fn entry() -> ! {
     };
 
     argument! {
-        args: args,
-        options: {
+        args,
+        flags: {
             a => options.all = true,
             l => options.long = true,
             h => options.human_readable = true,
             r => options.reverse = true,
             t => options.sort_by_time = true
         },
+        options: {},
         command: |arg| paths.push(PathBuf::from(OsStr::from_bytes(arg))),
         on_invalid: |arg| usage!("ls: invalid option -- '{arg}'")
     }
