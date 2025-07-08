@@ -48,11 +48,10 @@ fn entry() -> ! {
         command: |arg| files.push(OsStr::from_bytes(arg)),
         on_invalid: |arg| usage!("rm: invalid option -- '{arg}'")
     }
-    
+
     if files.is_empty() {
         error!("rm: missing operand");
     }
-
 
     for file in files {
         let path = Path::new(file);

@@ -21,7 +21,7 @@ pub fn gen(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut is_unsafe = !attr.to_string().contains("safe");
     let mut is_prelude = !attr.to_string().contains("no_prelude");
 
-    let imports = quote! {        
+    let imports = quote! {
         ?(is_bin => #[cfg_attr(feature = "bin", macro_use)])
         ?(!is_bin => #[macro_use])
         extern crate macros;

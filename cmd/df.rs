@@ -108,11 +108,11 @@ fn print_df(statfs_buf: &Statfs, use_512_blocks: bool) -> io::Result<()> {
 #[cfg(target_os = "linux")]
 fn print_df(mntent: &libc::mntent, use_512_blocks: bool) -> io::Result<()> {
     let mut statfs_buf: Statfs = unsafe { mem::zeroed() };
-    
+
     let mount_dir = unsafe { CStr::from_ptr(mntent.mnt_dir) };
     let path = Path::new(OsStr::from_bytes(mount_dir.to_bytes()));
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    
+
     if unsafe { statfs(c_path.as_ptr(), &mut statfs_buf) } == -1 {
         return Err(io::Error::last_os_error());
     }

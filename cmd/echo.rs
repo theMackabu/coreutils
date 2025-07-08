@@ -9,10 +9,10 @@ pub const DESCRIPTION: &str = "Display a line of text";
 fn entry() -> ! {
     let mut has_newline = true;
     let mut first_arg = true;
-    
+
     let stdout = io::stdout();
     let mut handle = stdout.lock();
-    
+
     argument! {
         args,
         flags: {
@@ -29,7 +29,7 @@ fn entry() -> ! {
         },
         on_invalid: |arg| usage!("echo: invalid option -- '{arg}'")
     }
-    
+
     if has_newline {
         let _ = handle.write_all(b"\n");
     }
