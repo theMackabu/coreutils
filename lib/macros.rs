@@ -15,20 +15,12 @@ macro_rules! module {
 
 #[macro_export]
 macro_rules! utf8_n {
-    ($opt:expr, $default:expr) => {
-        String::from_utf8_lossy($opt.next().unwrap_or($default.as_bytes())).into_owned()
+    ($opt:expr) => {
+       String::from_utf8_lossy($opt).into_owned()
     };
-    ($opt:expr, err: $err:expr) => {
-        String::from_utf8_lossy(&$opt.next().unwrap_or_else(|| $err)).into_owned()
+    (some->$opt:expr) => {
+       Some(String::from_utf8_lossy($opt).into_owned())
     };
-    (skip->$opt:expr, $default:expr) => {{
-        $opt.next();
-        String::from_utf8_lossy($opt.next().unwrap_or($default.as_bytes())).into_owned()
-    }};
-    (skip->$opt:expr, err: $err:expr) => {{
-        $opt.next();
-        String::from_utf8_lossy(&$opt.next().unwrap_or_else(|| $err)).into_owned()
-    }};
 }
 
 #[macro_export]
@@ -92,7 +84,7 @@ macro_rules! argument {
                         $(b if b == stringify!($flag).as_bytes()[0] => $set, )*
                         $(b if b == stringify!($opt).as_bytes()[0] => {
                             if let Some(next_arg) = iter.next() {
-                                $func(next_arg);
+                                $func(next_arg as &[u8]);
                             } else {
                                 $on_invalid(byte as char);
                             }

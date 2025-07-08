@@ -16,7 +16,8 @@ use self::curl::{
 };
 
 const USAGE: &str = "Usage: curl [options...] <url>
- -d <data> [plain|form|json]   HTTP POST data
+ -d <data...>                  HTTP POST data
+ -m [plain|form|json]          Set mime type for POST data
  -f                            Fail fast with no output on HTTP errors
  -i                            Include response headers in output
  -h <headers...>               Pass custom header(s) to server
@@ -327,7 +328,8 @@ fn send_request(url: &str, options: &mut Options) -> Result<(), Error> {
         match data.mime.as_str() {
             "json" => headers.append("Content-Type: application/json; charset=utf-8")?,
             "form" => headers.append("Content-Type: application/x-www-form-urlencoded")?,
-            _ => headers.append("Content-Type: text/plain; charset=utf-8")?,
+            "plain" => headers.append("Content-Type: text/plain; charset=utf-8")?,
+            invalid => usage!("curl: invalid mime type '{invalid}'"),
         }
 
         client.post(true)?;
@@ -538,8 +540,10 @@ fn entry() -> ! {
         user: None,
         user_agent: None,
     };
-
+    
     let mut url = String::new();
+    let mut body = String::new();
+    let mut mime = String::from("plain");
 
     argument! {
         args.to_owned(),
@@ -547,30 +551,28 @@ fn entry() -> ! {
             v => options.verbose = true,
             f => options.fail_fast = true,
             i => options.include_headers = true,
-            O => options.remote_name = true,
-
-            o => options.output = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'o'"))),
-            T => options.upload_file = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'T'"))),
-            u => options.user = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'u'"))),
-            A => options.user_agent = Some(utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'A'"))),
-
-            h => {
-                let header_list = utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'h'"));
-                let headers = header_list.split(',').map(|s| s.trim().to_owned()).collect::<Vec<_>>();
-
-                options.headers = Some(headers)
-            },
-
-            d => {
-                let body = utf8_n!(skip->args, err: usage!("curl: option requires an argument -- 'd'"));
-                let mime = utf8_n!(args, "plain");
-
-                options.data =  Some(Data { mime, body });
+            O => options.remote_name = true
+        },
+        options: {
+            d => |arg| body = utf8_n!(arg),
+            m => |arg| mime = utf8_n!(arg),
+            o => |arg| options.output = utf8_n!(some->arg),
+            T => |arg| options.upload_file = utf8_n!(some->arg),
+            u => |arg| options.user = utf8_n!(some->arg),
+            A => |arg| options.user_agent = utf8_n!(some->arg),
+            
+            h => |arg| {
+                let headers = utf8_n!(arg);
+                let header_list = headers.split(',').map(|s| s.trim().to_owned()).collect::<Vec<_>>();
+                options.headers = Some(header_list)
             }
         },
-        options: {},
         command: |arg| url = String::from_utf8_lossy(arg).into_owned(),
-        on_invalid: |arg| usage!("curl: invalid option -- '{}'", arg as char)
+        on_invalid: |arg| usage!("curl: invalid option -- '{arg}'")
+    }
+
+    if !body.is_empty() {
+        options.data =  Some(Data { mime, body })
     }
 
     if url.is_empty() {

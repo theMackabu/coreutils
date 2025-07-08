@@ -32,7 +32,7 @@ fn entry() -> ! {
         args,
         flags: { i => ignore_env = true },
         options: {},
-        command: |arg: &[u8]| {
+        command: |arg| {
             let arg = from_utf8(arg).unwrap_or("?");
             if let Some(pos) = arg.find('=') {
                 let (key, value) = arg.split_at(pos);
