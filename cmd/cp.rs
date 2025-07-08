@@ -79,6 +79,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "cp",
         flags: {
             R => options.recursive = true,
             r => options.recursive = true,

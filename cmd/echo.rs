@@ -15,6 +15,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "echo",
         flags: {
             n => has_newline = false,
             h => usage!(help->$)

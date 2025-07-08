@@ -63,6 +63,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "mkdir",
         flags: {
             p => recursive = true,
             h => usage!(help->$)

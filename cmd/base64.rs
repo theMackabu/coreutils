@@ -81,6 +81,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "base64",
         flags: { d => decode = true },
         options: {
             i => |arg| input_file = Some(PathBuf::from(OsStr::from_bytes(arg))),

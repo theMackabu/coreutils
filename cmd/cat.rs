@@ -75,6 +75,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "cat",
         flags: {
             b => options.number_nonblank = true,
             e => {

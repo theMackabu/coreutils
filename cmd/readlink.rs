@@ -12,6 +12,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "readlink",
         flags: { f => follow = true },
         options: {},
         command: |arg| {

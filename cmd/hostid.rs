@@ -14,6 +14,7 @@ extern "C" {
 fn entry() -> ! {
     argument! {
         args,
+        name: "hostid",
         flags: {},
         options: {},
         command: |_| usage!(),

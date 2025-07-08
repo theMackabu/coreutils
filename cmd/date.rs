@@ -15,6 +15,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "date",
         flags: { u => now = DateTime::now(true) },
         options: {},
         command: |arg| {

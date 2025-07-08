@@ -38,6 +38,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "sleep",
         flags: {},
         options: {},
         command: |arg| {

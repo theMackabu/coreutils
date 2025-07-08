@@ -46,6 +46,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "chown",
         flags: {
             h => no_dereference = true
         },

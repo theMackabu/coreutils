@@ -30,6 +30,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "env",
         flags: { i => ignore_env = true },
         options: {},
         command: |arg| {

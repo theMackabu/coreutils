@@ -11,6 +11,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "pwd",
         flags: {
             L => physical = false,
             P => physical = true

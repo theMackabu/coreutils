@@ -65,6 +65,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "id",
         flags: {
             u => options.print_user = true,
             G => options.print_groups = true,

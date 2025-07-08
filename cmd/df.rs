@@ -153,6 +153,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "df",
         flags: { k => use_512_blocks = false },
         options: {},
         command: |_| {},

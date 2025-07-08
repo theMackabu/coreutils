@@ -45,6 +45,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "tail",
         flags: { f => live = true },
         options: {
             n => |arg| {

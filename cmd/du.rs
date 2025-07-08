@@ -68,6 +68,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "du",
         flags: {
             a => options.all = true,
             h => options.human_readable = true,

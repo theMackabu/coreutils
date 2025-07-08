@@ -17,6 +17,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "kill",
         flags: {},
         options: {
             s => |arg| {

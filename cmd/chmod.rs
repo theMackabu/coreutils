@@ -112,6 +112,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "chmod",
         flags: {
             f => options.force = true,
             h => options.no_dereference = true,

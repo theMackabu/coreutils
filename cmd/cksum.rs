@@ -64,6 +64,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "cksum",
         flags: {},
         options: {},
         command: |arg| files.push(PathBuf::from(OsStr::from_bytes(arg))),

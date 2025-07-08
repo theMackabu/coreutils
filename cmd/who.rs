@@ -82,6 +82,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "who",
         flags: {
             a => show_all = true,
             H => show_headers = true

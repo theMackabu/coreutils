@@ -29,6 +29,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "ln",
         flags: {
             s => symbolic = true,
             f => force = true

@@ -124,6 +124,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "uname",
         flags: {
             a => {
                 print_sysname = true;

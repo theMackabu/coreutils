@@ -130,6 +130,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "mk",
         flags: {
             a => options.assume_out_of_date = true,
             d => options.debug = true,

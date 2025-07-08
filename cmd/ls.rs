@@ -218,6 +218,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "ls",
         flags: {
             a => options.all = true,
             l => options.long = true,

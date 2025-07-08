@@ -42,6 +42,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "tty",
         flags: { s => silent = true },
         options: {},
         command: |_| usage!(),

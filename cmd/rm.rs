@@ -38,6 +38,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "rm",
         flags: {
             r => options.recursive = true,
             R => options.recursive = true,

@@ -547,6 +547,7 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
+        name: "curl",
         flags: {
             v => options.verbose = true,
             f => options.fail_fast = true,

@@ -71,6 +71,7 @@ macro_rules! usage {
 macro_rules! argument {
     (
         $args:expr,
+        name: $name:expr,
         flags: { $( $flag:ident => $set:expr ),* },
         options: { $( $opt:ident => $func:expr ),* },
         command: $command:expr,
@@ -86,7 +87,7 @@ macro_rules! argument {
                             if let Some(next_arg) = iter.next() {
                                 $func(next_arg as &[u8]);
                             } else {
-                                $on_invalid(byte as char);
+                                usage!("{}: option requires an argument -- '{}'", $name, byte as char)
                             }
                         }, )*
                         _ => { $on_invalid(byte as char) }

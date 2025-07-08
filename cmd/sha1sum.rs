@@ -157,6 +157,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "sha1sum",
         flags: {},
         options: {},
         command: |arg| files.push(PathBuf::from(OsStr::from_bytes(arg))),

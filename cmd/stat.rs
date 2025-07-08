@@ -55,6 +55,7 @@ fn entry() -> ! {
 
     argument! {
         args,
+        name: "stat",
         flags: {},
         options: {},
         command: |arg| files.push(PathBuf::from(OsStr::from_bytes(arg))),
