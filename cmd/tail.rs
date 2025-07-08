@@ -45,17 +45,13 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        flags: {
-            n => {
-                let lines = args.next().unwrap_or_else(|| usage!("tail: option requires an argument -- 'n'"));
-                num_lines = std::str::from_utf8(lines)
-                    .unwrap_or_else(|_| usage!("tail: invalid UTF-8 sequence"))
-                    .parse()
-                    .unwrap_or_else(|_| usage!("tail: invalid number of lines: '{}'", std::str::from_utf8(lines).unwrap()));
-            },
-            f => live = true
+        flags: { f => live = true },
+        options: {
+            n => |arg| {
+                let lines = std::str::from_utf8(arg).unwrap_or_else(|_| usage!("tail: invalid UTF-8 sequence"));
+                num_lines = lines.parse().unwrap_or_else(|_| usage!("tail: invalid number of lines: '{lines}'"));
+            }
         },
-        options: {},
         command: |arg| {
             if file_path.is_some() {
                 usage!("tail: only one input file may be specified");

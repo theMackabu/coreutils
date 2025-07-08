@@ -23,7 +23,7 @@ struct MkOptions {
     force_intermediate: bool,
     keep_going: bool,
     print_only: bool,
-    sequential: bool,
+    silent: bool,
     touch: bool,
 }
 
@@ -76,6 +76,11 @@ fn execute_recipe(rule: &Rule, options: &MkOptions) -> io::Result<()> {
     } else {
         let shell = std::env::var("MKSHELL").unwrap_or_else(|_| "/bin/sh".to_string());
         let recipe = rule.recipe.join("\n");
+
+        if !options.silent {
+            println!("{recipe}")
+        }
+
         let status = Command::new(shell).arg("-c").arg(&recipe).status()?;
 
         if !status.success() && !options.keep_going {
@@ -118,7 +123,7 @@ fn entry() -> ! {
         force_intermediate: false,
         keep_going: false,
         print_only: false,
-        sequential: false,
+        silent: false,
         touch: false,
     };
     let mut targets = Vec::new();
@@ -126,30 +131,29 @@ fn entry() -> ! {
     argument! {
         args.to_owned(),
         flags: {
-            f => {
-                args.next();
-                options.mkfile = String::from_utf8_lossy(args.next().unwrap_or_else(|| usage!("mk: option requires an argument -- 'f'"))).into_owned();
-            },
             a => options.assume_out_of_date = true,
             d => options.debug = true,
             e => options.explain = true,
             i => options.force_intermediate = true,
             k => options.keep_going = true,
             n => options.print_only = true,
-            s => options.sequential = true,
+            s => options.silent = true,
             t => options.touch = true
         },
-        options: {},
+        options: {
+            f => |arg| options.mkfile = String::from_utf8_lossy(arg).into_owned()
+        },
         command: |arg| targets.push(String::from_utf8_lossy(arg).into_owned()),
         on_invalid: |arg| usage!("mk: invalid option -- '{}'", arg as char)
     }
 
     let mkfile_content = std::fs::read_to_string(&options.mkfile).unwrap_or_else(|_| error!("mk: cannot read mkfile '{}'", options.mkfile));
-
     let rules = parse_mkfile(&mkfile_content);
 
     if targets.is_empty() {
-        if let Some(first_rule) = rules.values().next() {
+        if rules.contains_key("all") {
+            targets.push("all".to_string());
+        } else if let Some(first_rule) = rules.values().next() {
             targets.push(first_rule.targets[0].clone());
         } else {
             error!("mk: no targets");

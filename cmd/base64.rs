@@ -81,20 +81,11 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        flags: {
-            d => decode = true,
-            i => {
-                args.next();
-                let next = args.next().unwrap_or_else(|| usage!("base64: option requires an argument -- 'i'"));
-                input_file = Some(PathBuf::from(OsStr::from_bytes(next)))
-            },
-            o => {
-                args.next();
-                let next = args.next().unwrap_or_else(|| usage!("base64: option requires an argument -- 'o'"));
-                output_file = Some(PathBuf::from(OsStr::from_bytes(next)))
-            }
+        flags: { d => decode = true },
+        options: {
+            i => |arg| input_file = Some(PathBuf::from(OsStr::from_bytes(arg))),
+            o => |arg| output_file = Some(PathBuf::from(OsStr::from_bytes(arg)))
         },
-        options: {},
         command: |arg| {
             if input_file.is_some() || input_string.is_some() {
                 usage!("base64: too many arguments");

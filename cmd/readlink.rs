@@ -12,9 +12,7 @@ fn entry() -> ! {
 
     argument! {
         args,
-        flags: {
-            f => follow = true
-        },
+        flags: { f => follow = true },
         options: {},
         command: |arg| {
             if file.is_some() {

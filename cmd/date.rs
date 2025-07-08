@@ -15,9 +15,7 @@ fn entry() -> ! {
 
     argument! {
         args,
-        flags: {
-            u => now = DateTime::now(true)
-        },
+        flags: { u => now = DateTime::now(true) },
         options: {},
         command: |arg| {
             let arg = String::from_utf8_lossy(arg).into_owned();

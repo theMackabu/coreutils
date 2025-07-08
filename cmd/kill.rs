@@ -17,16 +17,15 @@ fn entry() -> ! {
 
     argument! {
         args.to_owned(),
-        flags: {
-            s => {
-                let sig = args.next().unwrap_or_else(|| usage!("kill: option requires an argument -- 's'"));
-                signal = match String::from_utf8_lossy(sig).parse() {
+        flags: {},
+        options: {
+            s => |arg| {
+                signal = match String::from_utf8_lossy(arg).parse() {
                     Ok(sig) => sig,
                     Err(_) => usage!("kill: invalid signal")
                 };
             }
         },
-        options: {},
         command: |arg| {
             pids.push(String::from_utf8_lossy(arg).parse::<i32>().unwrap_or_else(|_| usage!("kill: invalid PID")));
         },

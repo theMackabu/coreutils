@@ -153,9 +153,7 @@ fn entry() -> ! {
 
     argument! {
         args,
-        flags: {
-            k => use_512_blocks = false
-        },
+        flags: { k => use_512_blocks = false },
         options: {},
         command: |_| {},
         on_invalid: |arg| usage!("df: invalid option -- '{}'", arg as char)

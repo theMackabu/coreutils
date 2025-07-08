@@ -6,7 +6,7 @@ extern crate uid;
 use self::uid::*;
 use std::io;
 
-const USAGE: &str = "usage: id [-u] [-g] [-G] [-n] [user]";
+const USAGE: &str = "usage: id [-ugGn] [user]";
 pub const DESCRIPTION: &str = "Print user and group information";
 
 fn print_id(options: &IdOptions, username: Option<&str>, group: Option<&str>) -> io::Result<()> {
@@ -67,17 +67,15 @@ fn entry() -> ! {
         args.to_owned(),
         flags: {
             u => options.print_user = true,
-            g => {
-                args.next();
-                if let Some(arg) = args.next() {
-                    group = Some(String::from_utf8_lossy(arg).into_owned());
-                }
-                options.print_group = true
-            },
             G => options.print_groups = true,
             n => options.use_name = true
         },
-        options: {},
+        options: {
+            g => |arg| {
+                group = Some(String::from_utf8_lossy(arg).into_owned());
+                options.print_group = true
+            }
+        },
         command: |arg| {
             if username.is_some() {
                 usage!("id: too many arguments");
