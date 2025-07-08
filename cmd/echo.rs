@@ -7,21 +7,31 @@ pub const DESCRIPTION: &str = "Display a line of text";
 
 #[entry::gen("bin", "safe")]
 fn entry() -> ! {
-    let mut no_newline = false;
-    let mut strings = Vec::new();
-
+    let mut has_newline = true;
+    let mut first_arg = true;
+    
+    let stdout = io::stdout();
+    let mut handle = stdout.lock();
+    
     argument! {
-        args: args,
-        options: {
-            n => no_newline = true
+        args,
+        flags: {
+            n => has_newline = false,
+            h => usage!(help->$)
         },
-        command: |arg| strings.push(String::from_utf8_lossy(arg).into_owned()),
-        on_invalid: |arg| usage!("echo: invalid option -- '{}'", arg as char)
+        options: {},
+        command: |arg| {
+            if !first_arg {
+                let _ = handle.write_all(b" ");
+            }
+            let _ = handle.write_all(arg);
+            first_arg = false;
+        },
+        on_invalid: |arg| usage!("echo: invalid option -- '{arg}'")
     }
-
-    print!("{}", strings.join(" "));
-
-    if !no_newline {
-        println!();
+    
+    if has_newline {
+        let _ = handle.write_all(b"\n");
     }
+    let _ = handle.flush();
 }
