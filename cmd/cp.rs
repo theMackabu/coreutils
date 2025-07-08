@@ -2,7 +2,7 @@
 
 extern crate entry;
 
-const USAGE: &str = "usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file";
+const USAGE: &str = "usage: cp [-Rrfipv] source_file target_file";
 pub const DESCRIPTION: &str = "Copy files and directories";
 
 struct CpOptions {
@@ -41,10 +41,11 @@ fn cp(source: &Path, destination: &Path, options: &CpOptions) -> Result<(), Box<
         return Ok(());
     }
 
-    if options.force {
-        fs::remove_file(destination).ok();
+    if options.force && destination.exists() {
+        if let Err(err) = fs::remove_file(destination) {
+            error!("cp: warning: failed to remove '{}': {}", destination.display(), err);
+        }
     }
-
     if source.is_dir() {
         if !options.recursive {
             error!("cp: -r not specified; omitting directory '{}'", source.display());
@@ -76,20 +77,21 @@ fn entry() -> ! {
     let mut options = CpOptions::new();
     let mut sources = Vec::new();
 
-    if argc < 3 {
-        usage!();
-    }
-
-    while let Some(arg) = args.next() {
-        match arg {
-            b"-R" | b"-r" => options.recursive = true,
-            b"-f" => options.force = true,
-            b"-i" => options.interactive = true,
-            b"-n" => options.no_clobber = true,
-            b"-p" => options.preserve_attributes = true,
-            b"-v" => options.verbose = true,
-            _ => sources.push(OsStr::from_bytes(arg)),
-        }
+    argument! {
+        args,
+        flags: {
+            R => options.recursive = true,
+            r => options.recursive = true,
+            f => options.force = true,
+            i => options.interactive = true,
+            n => options.no_clobber = true,
+            p => options.preserve_attributes = true,
+            v => options.verbose = true,
+            h => usage!(help->$)
+        },
+        options: {},
+        command: |arg| sources.push(OsStr::from_bytes(arg)),
+        on_invalid: |arg| usage!("cp: invalid option -- '{arg}'")
     }
 
     if sources.len() < 2 {
