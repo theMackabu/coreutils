@@ -54,8 +54,8 @@ macro_rules! usage {
         std::process::exit(1)
     }};
     (help->core) => {{
-        println!("{}", options_usage());
-        println!("{}", &*USAGE);
+        println!("{}\n", &*USAGE);
+        println!("{}", options());
         std::process::exit(0)
     }};
     (help->$) => {{
@@ -136,7 +136,7 @@ macro_rules! entry {
             }
         };
 
-        fn options_usage() -> String {
+        fn options() -> String {
             let mut usage_str = String::from("Options:\n");
             let mut option_lines = Vec::new();
 
