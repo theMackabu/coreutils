@@ -32,9 +32,7 @@ pub const DESCRIPTION: &str = "Transfer data from or to a server";
 struct Collector(Vec<u8>);
 
 impl Handler for Collector {
-    fn result(&self) -> Vec<u8> {
-        self.0.to_owned()
-    }
+    fn result(&self) -> Vec<u8> { self.0.to_owned() }
 
     fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
         self.0.extend_from_slice(data);
@@ -142,9 +140,7 @@ impl<H: Handler> Client<H> {
         drop(self.setopt_ptr(curl::CURLOPT_SSL_CTX_DATA, ptr));
     }
 
-    fn signal(&mut self, signal: bool) -> Result<(), Error> {
-        self.setopt_long(curl::CURLOPT_NOSIGNAL, (!signal) as c_long)
-    }
+    fn signal(&mut self, signal: bool) -> Result<(), Error> { self.setopt_long(curl::CURLOPT_NOSIGNAL, (!signal) as c_long) }
 
     fn setopt_path(&mut self, opt: curl::CURLoption, val: &Path) -> Result<(), Error> {
         use std::os::unix::prelude::*;
@@ -152,17 +148,11 @@ impl<H: Handler> Client<H> {
         self.setopt_str(opt, &s)
     }
 
-    fn setopt_long(&mut self, opt: curl::CURLoption, val: c_long) -> Result<(), Error> {
-        unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, val)) }
-    }
+    fn setopt_long(&mut self, opt: curl::CURLoption, val: c_long) -> Result<(), Error> { unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, val)) } }
 
-    fn setopt_str(&mut self, opt: curl::CURLoption, val: &CStr) -> Result<(), Error> {
-        self.setopt_ptr(opt, val.as_ptr())
-    }
+    fn setopt_str(&mut self, opt: curl::CURLoption, val: &CStr) -> Result<(), Error> { self.setopt_ptr(opt, val.as_ptr()) }
 
-    fn setopt_string(&mut self, opt: curl::CURLoption, data: &str) -> Result<(), Error> {
-        self.setopt_str(opt, &CString::new(data)?)
-    }
+    fn setopt_string(&mut self, opt: curl::CURLoption, data: &str) -> Result<(), Error> { self.setopt_str(opt, &CString::new(data)?) }
 
     fn useragent(&mut self, useragent: &str) -> Result<(), Error> {
         let useragent = CString::new(useragent)?;
@@ -175,9 +165,7 @@ impl<H: Handler> Client<H> {
         self.setopt_ptr(curl::CURLOPT_HTTPHEADER, ptr as *const _)
     }
 
-    fn setopt_ptr(&self, opt: curl::CURLoption, val: *const c_char) -> Result<(), Error> {
-        unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, val)) }
-    }
+    fn setopt_ptr(&self, opt: curl::CURLoption, val: *const c_char) -> Result<(), Error> { unsafe { self.cvt(curl::curl_easy_setopt(self.inner.handle, opt, val)) } }
 
     fn setopt_off_t(&mut self, opt: curl::CURLoption, val: curl::curl_off_t) -> Result<(), Error> {
         unsafe {
@@ -257,21 +245,13 @@ impl<H: Handler> Client<H> {
         c_str.to_str()
     }
 
-    fn upload(&mut self, enable: bool) -> Result<(), Error> {
-        self.setopt_long(curl::CURLOPT_UPLOAD, enable as c_long)
-    }
+    fn upload(&mut self, enable: bool) -> Result<(), Error> { self.setopt_long(curl::CURLOPT_UPLOAD, enable as c_long) }
 
-    fn upload_buffer_size(&mut self, size: usize) -> Result<(), Error> {
-        self.setopt_long(curl::CURLOPT_UPLOAD_BUFFERSIZE, size as c_long)
-    }
+    fn upload_buffer_size(&mut self, size: usize) -> Result<(), Error> { self.setopt_long(curl::CURLOPT_UPLOAD_BUFFERSIZE, size as c_long) }
 
-    fn response_code(&self) -> Result<u32, Error> {
-        self.getopt_long(curl::CURLINFO_RESPONSE_CODE).map(|c| c as u32)
-    }
+    fn response_code(&self) -> Result<u32, Error> { self.getopt_long(curl::CURLINFO_RESPONSE_CODE).map(|c| c as u32) }
 
-    fn effective_url(&self) -> Result<Option<&str>, Error> {
-        self.getopt_str(curl::CURLINFO_EFFECTIVE_URL)
-    }
+    fn effective_url(&self) -> Result<Option<&str>, Error> { self.getopt_str(curl::CURLINFO_EFFECTIVE_URL) }
 
     fn take_error_buf(&self) -> Option<String> {
         let mut buf = self.inner.error_buf.borrow_mut();

@@ -54,9 +54,7 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions, stdout: &mut io::Stdout
 }
 
 #[inline]
-fn process_nonprinting_chars(line: &str) -> String {
-    line.chars().map(|c| if c.is_ascii_control() && c != '\t' && c != '\n' { (c as u8 + 64) as char } else { c }).collect()
-}
+fn process_nonprinting_chars(line: &str) -> String { line.chars().map(|c| if c.is_ascii_control() && c != '\t' && c != '\n' { (c as u8 + 64) as char } else { c }).collect() }
 
 #[entry::gen("bin", "safe")]
 fn entry() -> ! {

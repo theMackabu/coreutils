@@ -41,9 +41,7 @@ fn get_resource_usage() -> Rusage {
     return usage;
 }
 
-fn timeval_to_seconds(tv: &Timeval) -> f64 {
-    tv.tv_sec as f64 + tv.tv_usec as f64 * 1e-6
-}
+fn timeval_to_seconds(tv: &Timeval) -> f64 { tv.tv_sec as f64 + tv.tv_usec as f64 * 1e-6 }
 
 #[entry::gen("bin", "safe")]
 fn entry() -> ! {

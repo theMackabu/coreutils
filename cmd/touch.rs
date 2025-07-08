@@ -22,9 +22,7 @@ impl<'f> File<'f> {
         }
     }
 
-    fn exists(&self) -> bool {
-        fs::metadata(&self.path).is_ok()
-    }
+    fn exists(&self) -> bool { fs::metadata(&self.path).is_ok() }
 
     fn touch(&self) -> Result<isize, Box<dyn Error>> {
         if self.no_create && !self.exists() {

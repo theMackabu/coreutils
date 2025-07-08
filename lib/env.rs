@@ -42,18 +42,12 @@ pub struct Vars {
 
 impl Iterator for Vars {
     type Item = String;
-    fn next(&mut self) -> Option<String> {
-        self.inner.next().map(|var| var.into_string().unwrap())
-    }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.inner.size_hint()
-    }
+    fn next(&mut self) -> Option<String> { self.inner.next().map(|var| var.into_string().unwrap()) }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.inner.size_hint() }
 }
 
 #[cfg(target_os = "macos")]
-unsafe fn environ() -> *mut *const *const libc::c_char {
-    _NSGetEnviron() as *mut *const *const libc::c_char
-}
+unsafe fn environ() -> *mut *const *const libc::c_char { _NSGetEnviron() as *mut *const *const libc::c_char }
 
 #[cfg(not(target_os = "macos"))]
 unsafe fn environ() -> *mut *const *const libc::c_char {
@@ -88,9 +82,7 @@ fn run_with_cstr_allocating<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T>)
 }
 
 #[inline]
-pub fn run_path_with_cstr<T>(path: &Path, f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> {
-    run_with_cstr(path.as_os_str().as_encoded_bytes(), f)
-}
+pub fn run_path_with_cstr<T>(path: &Path, f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> { run_with_cstr(path.as_os_str().as_encoded_bytes(), f) }
 
 #[inline]
 pub fn run_with_cstr<T>(bytes: &[u8], f: &dyn Fn(&CStr) -> io::Result<T>) -> io::Result<T> {

@@ -969,13 +969,9 @@ pub enum SeekResult {
 }
 
 pub trait Handler {
-    fn result(&self) -> Vec<u8> {
-        Vec::new()
-    }
+    fn result(&self) -> Vec<u8> { Vec::new() }
 
-    fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
-        Ok(data.len())
-    }
+    fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> { Ok(data.len()) }
 
     fn read(&mut self, data: &mut [u8]) -> Result<usize, ReadError> {
         let _ = data;
@@ -997,9 +993,7 @@ pub trait Handler {
         true
     }
 
-    fn ssl_ctx(&mut self, _cx: *mut c_void) -> Result<(), Error> {
-        Ok(())
-    }
+    fn ssl_ctx(&mut self, _cx: *mut c_void) -> Result<(), Error> { Ok(()) }
 }
 
 pub mod list {
@@ -1015,20 +1009,14 @@ pub mod list {
         cur: *mut curl_slist,
     }
 
-    pub fn raw(list: &List) -> *mut curl_slist {
-        list.raw
-    }
+    pub fn raw(list: &List) -> *mut curl_slist { list.raw }
 
-    pub unsafe fn from_raw(raw: *mut curl_slist) -> List {
-        List { raw }
-    }
+    pub unsafe fn from_raw(raw: *mut curl_slist) -> List { List { raw } }
 
     unsafe impl Send for List {}
 
     impl List {
-        pub fn new() -> List {
-            List { raw: ptr::null_mut() }
-        }
+        pub fn new() -> List { List { raw: ptr::null_mut() } }
 
         pub fn append(&mut self, data: &str) -> Result<(), Error> {
             let data = CString::new(data)?;
@@ -1040,30 +1028,22 @@ pub mod list {
             }
         }
 
-        pub fn iter(&self) -> Iter<'_> {
-            Iter { _me: self, cur: self.raw }
-        }
+        pub fn iter(&self) -> Iter<'_> { Iter { _me: self, cur: self.raw } }
     }
 
     impl fmt::Debug for List {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            f.debug_list().entries(self.iter().map(String::from_utf8_lossy)).finish()
-        }
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.debug_list().entries(self.iter().map(String::from_utf8_lossy)).finish() }
     }
 
     impl<'a> IntoIterator for &'a List {
         type IntoIter = Iter<'a>;
         type Item = &'a [u8];
 
-        fn into_iter(self) -> Iter<'a> {
-            self.iter()
-        }
+        fn into_iter(self) -> Iter<'a> { self.iter() }
     }
 
     impl Drop for List {
-        fn drop(&mut self) {
-            unsafe { curl_slist_free_all(self.raw) }
-        }
+        fn drop(&mut self) { unsafe { curl_slist_free_all(self.raw) } }
     }
 
     impl<'a> Iterator for Iter<'a> {
@@ -1083,9 +1063,7 @@ pub mod list {
     }
 
     impl<'a> fmt::Debug for Iter<'a> {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            f.debug_list().entries(self.clone().map(String::from_utf8_lossy)).finish()
-        }
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.debug_list().entries(self.clone().map(String::from_utf8_lossy)).finish() }
     }
 }
 
@@ -1096,221 +1074,113 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(code: CURLcode) -> Error {
-        Error { code, extra: None }
-    }
+    pub fn new(code: CURLcode) -> Error { Error { code, extra: None } }
 
-    pub fn set_extra(&mut self, extra: String) {
-        self.extra = Some(extra.into());
-    }
+    pub fn set_extra(&mut self, extra: String) { self.extra = Some(extra.into()); }
 
-    pub fn is_unsupported_protocol(&self) -> bool {
-        self.code == CURLE_UNSUPPORTED_PROTOCOL
-    }
+    pub fn is_unsupported_protocol(&self) -> bool { self.code == CURLE_UNSUPPORTED_PROTOCOL }
 
-    pub fn is_failed_init(&self) -> bool {
-        self.code == CURLE_FAILED_INIT
-    }
+    pub fn is_failed_init(&self) -> bool { self.code == CURLE_FAILED_INIT }
 
-    pub fn is_url_malformed(&self) -> bool {
-        self.code == CURLE_URL_MALFORMAT
-    }
+    pub fn is_url_malformed(&self) -> bool { self.code == CURLE_URL_MALFORMAT }
 
-    pub fn is_couldnt_resolve_proxy(&self) -> bool {
-        self.code == CURLE_COULDNT_RESOLVE_PROXY
-    }
+    pub fn is_couldnt_resolve_proxy(&self) -> bool { self.code == CURLE_COULDNT_RESOLVE_PROXY }
 
-    pub fn is_couldnt_resolve_host(&self) -> bool {
-        self.code == CURLE_COULDNT_RESOLVE_HOST
-    }
+    pub fn is_couldnt_resolve_host(&self) -> bool { self.code == CURLE_COULDNT_RESOLVE_HOST }
 
-    pub fn is_couldnt_connect(&self) -> bool {
-        self.code == CURLE_COULDNT_CONNECT
-    }
+    pub fn is_couldnt_connect(&self) -> bool { self.code == CURLE_COULDNT_CONNECT }
 
-    pub fn is_remote_access_denied(&self) -> bool {
-        self.code == CURLE_REMOTE_ACCESS_DENIED
-    }
+    pub fn is_remote_access_denied(&self) -> bool { self.code == CURLE_REMOTE_ACCESS_DENIED }
 
-    pub fn is_partial_file(&self) -> bool {
-        self.code == CURLE_PARTIAL_FILE
-    }
+    pub fn is_partial_file(&self) -> bool { self.code == CURLE_PARTIAL_FILE }
 
-    pub fn is_quote_error(&self) -> bool {
-        self.code == CURLE_QUOTE_ERROR
-    }
+    pub fn is_quote_error(&self) -> bool { self.code == CURLE_QUOTE_ERROR }
 
-    pub fn is_http_returned_error(&self) -> bool {
-        self.code == CURLE_HTTP_RETURNED_ERROR
-    }
+    pub fn is_http_returned_error(&self) -> bool { self.code == CURLE_HTTP_RETURNED_ERROR }
 
-    pub fn is_read_error(&self) -> bool {
-        self.code == CURLE_READ_ERROR
-    }
+    pub fn is_read_error(&self) -> bool { self.code == CURLE_READ_ERROR }
 
-    pub fn is_write_error(&self) -> bool {
-        self.code == CURLE_WRITE_ERROR
-    }
+    pub fn is_write_error(&self) -> bool { self.code == CURLE_WRITE_ERROR }
 
-    pub fn is_upload_failed(&self) -> bool {
-        self.code == CURLE_UPLOAD_FAILED
-    }
+    pub fn is_upload_failed(&self) -> bool { self.code == CURLE_UPLOAD_FAILED }
 
-    pub fn is_out_of_memory(&self) -> bool {
-        self.code == CURLE_OUT_OF_MEMORY
-    }
+    pub fn is_out_of_memory(&self) -> bool { self.code == CURLE_OUT_OF_MEMORY }
 
-    pub fn is_operation_timedout(&self) -> bool {
-        self.code == CURLE_OPERATION_TIMEDOUT
-    }
+    pub fn is_operation_timedout(&self) -> bool { self.code == CURLE_OPERATION_TIMEDOUT }
 
-    pub fn is_range_error(&self) -> bool {
-        self.code == CURLE_RANGE_ERROR
-    }
+    pub fn is_range_error(&self) -> bool { self.code == CURLE_RANGE_ERROR }
 
-    pub fn is_http_post_error(&self) -> bool {
-        self.code == CURLE_HTTP_POST_ERROR
-    }
+    pub fn is_http_post_error(&self) -> bool { self.code == CURLE_HTTP_POST_ERROR }
 
-    pub fn is_ssl_connect_error(&self) -> bool {
-        self.code == CURLE_SSL_CONNECT_ERROR
-    }
+    pub fn is_ssl_connect_error(&self) -> bool { self.code == CURLE_SSL_CONNECT_ERROR }
 
-    pub fn is_bad_download_resume(&self) -> bool {
-        self.code == CURLE_BAD_DOWNLOAD_RESUME
-    }
+    pub fn is_bad_download_resume(&self) -> bool { self.code == CURLE_BAD_DOWNLOAD_RESUME }
 
-    pub fn is_file_couldnt_read_file(&self) -> bool {
-        self.code == CURLE_FILE_COULDNT_READ_FILE
-    }
+    pub fn is_file_couldnt_read_file(&self) -> bool { self.code == CURLE_FILE_COULDNT_READ_FILE }
 
-    pub fn is_function_not_found(&self) -> bool {
-        self.code == CURLE_FUNCTION_NOT_FOUND
-    }
+    pub fn is_function_not_found(&self) -> bool { self.code == CURLE_FUNCTION_NOT_FOUND }
 
-    pub fn is_aborted_by_callback(&self) -> bool {
-        self.code == CURLE_ABORTED_BY_CALLBACK
-    }
+    pub fn is_aborted_by_callback(&self) -> bool { self.code == CURLE_ABORTED_BY_CALLBACK }
 
-    pub fn is_bad_function_argument(&self) -> bool {
-        self.code == CURLE_BAD_FUNCTION_ARGUMENT
-    }
+    pub fn is_bad_function_argument(&self) -> bool { self.code == CURLE_BAD_FUNCTION_ARGUMENT }
 
-    pub fn is_interface_failed(&self) -> bool {
-        self.code == CURLE_INTERFACE_FAILED
-    }
+    pub fn is_interface_failed(&self) -> bool { self.code == CURLE_INTERFACE_FAILED }
 
-    pub fn is_too_many_redirects(&self) -> bool {
-        self.code == CURLE_TOO_MANY_REDIRECTS
-    }
+    pub fn is_too_many_redirects(&self) -> bool { self.code == CURLE_TOO_MANY_REDIRECTS }
 
-    pub fn is_unknown_option(&self) -> bool {
-        self.code == CURLE_UNKNOWN_OPTION
-    }
+    pub fn is_unknown_option(&self) -> bool { self.code == CURLE_UNKNOWN_OPTION }
 
-    pub fn is_peer_failed_verification(&self) -> bool {
-        self.code == CURLE_PEER_FAILED_VERIFICATION
-    }
+    pub fn is_peer_failed_verification(&self) -> bool { self.code == CURLE_PEER_FAILED_VERIFICATION }
 
-    pub fn is_got_nothing(&self) -> bool {
-        self.code == CURLE_GOT_NOTHING
-    }
+    pub fn is_got_nothing(&self) -> bool { self.code == CURLE_GOT_NOTHING }
 
-    pub fn is_ssl_engine_notfound(&self) -> bool {
-        self.code == CURLE_SSL_ENGINE_NOTFOUND
-    }
+    pub fn is_ssl_engine_notfound(&self) -> bool { self.code == CURLE_SSL_ENGINE_NOTFOUND }
 
-    pub fn is_ssl_engine_setfailed(&self) -> bool {
-        self.code == CURLE_SSL_ENGINE_SETFAILED
-    }
+    pub fn is_ssl_engine_setfailed(&self) -> bool { self.code == CURLE_SSL_ENGINE_SETFAILED }
 
-    pub fn is_send_error(&self) -> bool {
-        self.code == CURLE_SEND_ERROR
-    }
+    pub fn is_send_error(&self) -> bool { self.code == CURLE_SEND_ERROR }
 
-    pub fn is_recv_error(&self) -> bool {
-        self.code == CURLE_RECV_ERROR
-    }
+    pub fn is_recv_error(&self) -> bool { self.code == CURLE_RECV_ERROR }
 
-    pub fn is_ssl_certproblem(&self) -> bool {
-        self.code == CURLE_SSL_CERTPROBLEM
-    }
+    pub fn is_ssl_certproblem(&self) -> bool { self.code == CURLE_SSL_CERTPROBLEM }
 
-    pub fn is_ssl_cipher(&self) -> bool {
-        self.code == CURLE_SSL_CIPHER
-    }
+    pub fn is_ssl_cipher(&self) -> bool { self.code == CURLE_SSL_CIPHER }
 
-    pub fn is_ssl_cacert(&self) -> bool {
-        self.code == CURLE_SSL_CACERT
-    }
+    pub fn is_ssl_cacert(&self) -> bool { self.code == CURLE_SSL_CACERT }
 
-    pub fn is_bad_content_encoding(&self) -> bool {
-        self.code == CURLE_BAD_CONTENT_ENCODING
-    }
+    pub fn is_bad_content_encoding(&self) -> bool { self.code == CURLE_BAD_CONTENT_ENCODING }
 
-    pub fn is_filesize_exceeded(&self) -> bool {
-        self.code == CURLE_FILESIZE_EXCEEDED
-    }
+    pub fn is_filesize_exceeded(&self) -> bool { self.code == CURLE_FILESIZE_EXCEEDED }
 
-    pub fn is_use_ssl_failed(&self) -> bool {
-        self.code == CURLE_USE_SSL_FAILED
-    }
+    pub fn is_use_ssl_failed(&self) -> bool { self.code == CURLE_USE_SSL_FAILED }
 
-    pub fn is_send_fail_rewind(&self) -> bool {
-        self.code == CURLE_SEND_FAIL_REWIND
-    }
+    pub fn is_send_fail_rewind(&self) -> bool { self.code == CURLE_SEND_FAIL_REWIND }
 
-    pub fn is_ssl_engine_initfailed(&self) -> bool {
-        self.code == CURLE_SSL_ENGINE_INITFAILED
-    }
+    pub fn is_ssl_engine_initfailed(&self) -> bool { self.code == CURLE_SSL_ENGINE_INITFAILED }
 
-    pub fn is_login_denied(&self) -> bool {
-        self.code == CURLE_LOGIN_DENIED
-    }
+    pub fn is_login_denied(&self) -> bool { self.code == CURLE_LOGIN_DENIED }
 
-    pub fn is_conv_failed(&self) -> bool {
-        self.code == CURLE_CONV_FAILED
-    }
+    pub fn is_conv_failed(&self) -> bool { self.code == CURLE_CONV_FAILED }
 
-    pub fn is_conv_required(&self) -> bool {
-        self.code == CURLE_CONV_REQD
-    }
+    pub fn is_conv_required(&self) -> bool { self.code == CURLE_CONV_REQD }
 
-    pub fn is_ssl_cacert_badfile(&self) -> bool {
-        self.code == CURLE_SSL_CACERT_BADFILE
-    }
+    pub fn is_ssl_cacert_badfile(&self) -> bool { self.code == CURLE_SSL_CACERT_BADFILE }
 
-    pub fn is_ssl_crl_badfile(&self) -> bool {
-        self.code == CURLE_SSL_CRL_BADFILE
-    }
+    pub fn is_ssl_crl_badfile(&self) -> bool { self.code == CURLE_SSL_CRL_BADFILE }
 
-    pub fn is_ssl_shutdown_failed(&self) -> bool {
-        self.code == CURLE_SSL_SHUTDOWN_FAILED
-    }
+    pub fn is_ssl_shutdown_failed(&self) -> bool { self.code == CURLE_SSL_SHUTDOWN_FAILED }
 
-    pub fn is_again(&self) -> bool {
-        self.code == CURLE_AGAIN
-    }
+    pub fn is_again(&self) -> bool { self.code == CURLE_AGAIN }
 
-    pub fn is_ssl_issuer_error(&self) -> bool {
-        self.code == CURLE_SSL_ISSUER_ERROR
-    }
+    pub fn is_ssl_issuer_error(&self) -> bool { self.code == CURLE_SSL_ISSUER_ERROR }
 
-    pub fn is_chunk_failed(&self) -> bool {
-        self.code == CURLE_CHUNK_FAILED
-    }
+    pub fn is_chunk_failed(&self) -> bool { self.code == CURLE_CHUNK_FAILED }
 
-    pub fn is_http2_error(&self) -> bool {
-        self.code == CURLE_HTTP2
-    }
+    pub fn is_http2_error(&self) -> bool { self.code == CURLE_HTTP2 }
 
-    pub fn is_http2_stream_error(&self) -> bool {
-        self.code == CURLE_HTTP2_STREAM
-    }
+    pub fn is_http2_stream_error(&self) -> bool { self.code == CURLE_HTTP2_STREAM }
 
-    pub fn code(&self) -> CURLcode {
-        self.code
-    }
+    pub fn code(&self) -> CURLcode { self.code }
 
     pub fn description(&self) -> &str {
         unsafe {
@@ -1320,9 +1190,7 @@ impl Error {
         }
     }
 
-    pub fn extra_description(&self) -> Option<&str> {
-        self.extra.as_deref()
-    }
+    pub fn extra_description(&self) -> Option<&str> { self.extra.as_deref() }
 }
 
 impl fmt::Display for Error {
@@ -1348,27 +1216,19 @@ impl fmt::Debug for Error {
 impl error::Error for Error {}
 
 impl From<ffi::NulError> for Error {
-    fn from(_: ffi::NulError) -> Error {
-        Error { code: CURLE_CONV_FAILED, extra: None }
-    }
+    fn from(_: ffi::NulError) -> Error { Error { code: CURLE_CONV_FAILED, extra: None } }
 }
 
 impl From<io::Error> for Error {
-    fn from(error: io::Error) -> Self {
-        Error::new(CURLE_WRITE_ERROR).tap(|s| s.set_extra(error.to_string()))
-    }
+    fn from(error: io::Error) -> Self { Error::new(CURLE_WRITE_ERROR).tap(|s| s.set_extra(error.to_string())) }
 }
 
 impl From<std::str::Utf8Error> for Error {
-    fn from(error: std::str::Utf8Error) -> Self {
-        Error::new(CURLE_GOT_NOTHING).tap(|s| s.set_extra(error.to_string()))
-    }
+    fn from(error: std::str::Utf8Error) -> Self { Error::new(CURLE_GOT_NOTHING).tap(|s| s.set_extra(error.to_string())) }
 }
 
 impl From<Error> for io::Error {
-    fn from(e: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, e)
-    }
+    fn from(e: Error) -> io::Error { io::Error::new(io::ErrorKind::Other, e) }
 }
 
 pub mod panic {

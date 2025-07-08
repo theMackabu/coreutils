@@ -29,9 +29,7 @@ struct ChmodOptions {
 struct ChmodError(String);
 
 impl fmt::Display for ChmodError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 impl std::error::Error for ChmodError {}

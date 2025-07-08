@@ -13,9 +13,7 @@ struct Dir<'d> {
 }
 
 impl<'d> Dir<'d> {
-    fn new(path: &'d [u8], mode: u32) -> Self {
-        Self { path: OsStr::from_bytes(path), mode }
-    }
+    fn new(path: &'d [u8], mode: u32) -> Self { Self { path: OsStr::from_bytes(path), mode } }
 
     fn exists(&self) -> bool {
         match exists(&self.path) {

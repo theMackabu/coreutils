@@ -101,41 +101,23 @@ impl DateTime {
         }
     }
 
-    pub fn year(&self) -> i32 {
-        self.year
-    }
+    pub fn year(&self) -> i32 { self.year }
 
-    pub fn month(&self) -> u32 {
-        self.month
-    }
+    pub fn month(&self) -> u32 { self.month }
 
-    pub fn day(&self) -> u32 {
-        self.day
-    }
+    pub fn day(&self) -> u32 { self.day }
 
-    pub fn hour(&self) -> u32 {
-        self.hour
-    }
+    pub fn hour(&self) -> u32 { self.hour }
 
-    pub fn minute(&self) -> u32 {
-        self.minute
-    }
+    pub fn minute(&self) -> u32 { self.minute }
 
-    pub fn second(&self) -> u32 {
-        self.second
-    }
+    pub fn second(&self) -> u32 { self.second }
 
-    pub fn day_of_year(&self) -> u32 {
-        self.day_of_year
-    }
+    pub fn day_of_year(&self) -> u32 { self.day_of_year }
 
-    pub fn day_of_week(&self) -> u32 {
-        self.day_of_week
-    }
+    pub fn day_of_week(&self) -> u32 { self.day_of_week }
 
-    pub fn dst(&self) -> bool {
-        self.is_dst
-    }
+    pub fn dst(&self) -> bool { self.is_dst }
 
     pub fn format(&self, fmt: &str) -> String {
         fmt.replace("%D", &format!("{:02}/{:02}/{:02}", self.month(), self.day(), self.year() % 100))
@@ -156,9 +138,7 @@ impl DateTime {
             .replace("%Z", &self.timezone)
     }
 
-    pub fn add_days(&mut self, days: i64) {
-        self.timestamp += days * 86400;
-    }
+    pub fn add_days(&mut self, days: i64) { self.timestamp += days * 86400; }
 }
 
 const MONTH_NAMES: [&str; 12] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
