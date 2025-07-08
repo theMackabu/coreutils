@@ -29,7 +29,7 @@ fn entry() -> ! {
         .collect();
 
     argument! {
-        args: args,
+        args,
         options: {
             i => ignore_env = true
         },

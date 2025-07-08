@@ -123,7 +123,7 @@ fn entry() -> ! {
     let mut print_os = false;
 
     argument! {
-        args: args,
+        args,
         options: {
             a => {
                 print_sysname = true;

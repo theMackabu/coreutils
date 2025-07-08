@@ -11,7 +11,7 @@ fn entry() -> ! {
     let mut file = None;
 
     argument! {
-        args: args,
+        args,
         options: {
             f => follow = true
         },

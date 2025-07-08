@@ -80,7 +80,7 @@ fn entry() -> ! {
     let mut input_string = None;
 
     argument! {
-        args: args.to_owned(),
+        args.to_owned(),
         options: {
             d => decode = true,
             i => {

@@ -562,7 +562,7 @@ fn entry() -> ! {
     let mut url = String::new();
 
     argument! {
-        args: args.to_owned(),
+        args.to_owned(),
         options: {
             v => options.verbose = true,
             f => options.fail_fast = true,

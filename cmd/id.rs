@@ -64,7 +64,7 @@ fn entry() -> ! {
     };
 
     argument! {
-        args: args.to_owned(),
+        args.to_owned(),
         options: {
             u => options.print_user = true,
             g => {

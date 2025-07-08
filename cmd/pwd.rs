@@ -10,7 +10,7 @@ fn entry() -> ! {
     let mut physical = false;
 
     argument! {
-        args: args,
+        args,
         options: {
             L => physical = false,
             P => physical = true

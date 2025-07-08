@@ -124,7 +124,7 @@ fn entry() -> ! {
     let mut targets = Vec::new();
 
     argument! {
-        args: args.to_owned(),
+        args.to_owned(),
         options: {
             f => {
                 args.next();

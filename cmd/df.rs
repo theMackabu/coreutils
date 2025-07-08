@@ -152,7 +152,7 @@ fn entry() -> ! {
     let mut use_512_blocks = true;
 
     argument! {
-        args: args,
+        args,
         options: {
             k => use_512_blocks = false
         },

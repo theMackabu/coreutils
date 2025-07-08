@@ -37,7 +37,7 @@ fn entry() -> ! {
     let mut total_duration = Duration::new(0, 0);
 
     argument! {
-        args: args,
+        args,
         options: {},
         command: |arg| {
             match parse_duration(&String::from_utf8_lossy(arg)) {

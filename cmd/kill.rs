@@ -16,7 +16,7 @@ fn entry() -> ! {
     let mut pids = Vec::new();
 
     argument! {
-        args: args.to_owned(),
+        args.to_owned(),
         options: {
             s => {
                 let sig = args.next().unwrap_or_else(|| usage!("kill: option requires an argument -- 's'"));

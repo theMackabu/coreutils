@@ -113,7 +113,7 @@ fn entry() -> ! {
     let mut files = Vec::new();
 
     argument! {
-        args: args,
+        args,
         options: {
             f => options.force = true,
             h => options.no_dereference = true,

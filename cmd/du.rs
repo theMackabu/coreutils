@@ -67,7 +67,7 @@ fn entry() -> ! {
     };
 
     argument! {
-        args: args,
+        args,
         options: {
             a => options.all = true,
             h => options.human_readable = true,

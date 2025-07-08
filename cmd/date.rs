@@ -14,7 +14,7 @@ fn entry() -> ! {
     let mut format = String::from("%a %b %r %H:%M:%S %Z %Y");
 
     argument! {
-        args: args,
+        args,
         options: {
             u => now = DateTime::now(true)
         },

@@ -45,7 +45,7 @@ fn entry() -> ! {
     let mut files = Vec::new();
 
     argument! {
-        args: args,
+        args,
         options: {
             h => no_dereference = true
         },

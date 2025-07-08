@@ -13,7 +13,8 @@ extern "C" {
 #[entry::gen("bin")]
 fn entry() -> ! {
     argument! {
-        args: args,
+        args,
+        flags: {},
         options: {},
         command: |_| usage!(),
         on_invalid: |arg| usage!("hostid: invalid option -- '{}'", arg as char)

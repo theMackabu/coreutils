@@ -41,7 +41,7 @@ fn entry() -> ! {
     let mut silent = false;
 
     argument! {
-        args: args,
+        args,
         options: {
             s => silent = true
         },

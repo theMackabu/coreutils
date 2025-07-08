@@ -28,7 +28,7 @@ fn entry() -> ! {
     let mut link_name = None;
 
     argument! {
-        args: args,
+        args,
         options: {
             s => symbolic = true,
             f => force = true

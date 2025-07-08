@@ -44,7 +44,7 @@ fn entry() -> ! {
     let mut live = false;
 
     argument! {
-        args: args.to_owned(),
+        args.to_owned(),
         options: {
             n => {
                 let lines = args.next().unwrap_or_else(|| usage!("tail: option requires an argument -- 'n'"));

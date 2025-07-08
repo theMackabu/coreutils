@@ -81,7 +81,7 @@ fn entry() -> ! {
     let mut show_headers = false;
 
     argument! {
-        args: args,
+        args,
         options: {
             a => show_all = true,
             H => show_headers = true

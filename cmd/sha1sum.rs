@@ -156,7 +156,7 @@ fn entry() -> ! {
     let mut files = Vec::new();
 
     argument! {
-        args: args,
+        args,
         options: {},
         command: |arg| files.push(PathBuf::from(OsStr::from_bytes(arg))),
         on_invalid: |arg| usage!("sha1sum: invalid option -- '{}'", arg as char)
