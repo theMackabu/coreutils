@@ -13,6 +13,7 @@ rustc = "rustc +%{env.channel} -Z unstable-options"
 flags = "-L ./target/lib -O -C codegen-units=1 %{env.cfg}"
 
 [tasks]
+fmt.script = "bash -c 'find . -name \"*.rs\" -exec rustfmt {} \\;'"
 test.script = ["maid build -q %{arg.1}", "./%{env.bin}/%{arg.1} %{arg.2}"]
 clean.script = ["rm -rf %{env.lib}", "rm -rf %{env.bin}/%{arg.1}", "mkdir -p %{env.bin}", "mkdir -p %{env.lib}"]
 
