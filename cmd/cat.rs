@@ -3,7 +3,7 @@
 extern crate entry;
 
 const USAGE: &str = "usage: cat [-benstv] [file ...]";
-pub const DESCRIPTION: &str = "Concatenate and print files";
+pub const DESCRIPTION: &str = "Concatenate and and display files to the standard output";
 
 struct CatOptions {
     number_nonblank: bool,
@@ -14,9 +14,7 @@ struct CatOptions {
     show_nonprinting: bool,
 }
 
-fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn Error>> {
-    let stdout = io::stdout();
-    let mut stdout = stdout.lock();
+fn cat_file<R: BufRead>(reader: R, options: &CatOptions, stdout: &mut io::StdoutLock) -> Result<(), Box<dyn Error>> {
     let mut line_number = 1;
     let mut last_line_blank = false;
 
@@ -29,7 +27,7 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
         }
 
         if options.show_nonprinting {
-            line = line.chars().map(|c| if c.is_ascii_control() && c != '\t' && c != '\n' { (c as u8 + 64) as char } else { c }).collect();
+            line = process_nonprinting_chars(&line);
         }
 
         if options.show_tabs {
@@ -55,6 +53,11 @@ fn cat_file<R: BufRead>(reader: R, options: &CatOptions) -> Result<(), Box<dyn E
     Ok(())
 }
 
+#[inline]
+fn process_nonprinting_chars(line: &str) -> String {
+    line.chars().map(|c| if c.is_ascii_control() && c != '\t' && c != '\n' { (c as u8 + 64) as char } else { c }).collect()
+}
+
 #[entry::gen("bin", "safe")]
 fn entry() -> ! {
     let mut files = Vec::new();
@@ -72,37 +75,35 @@ fn entry() -> ! {
         usage!();
     }
 
-    for arg in args {
-        if arg.starts_with(b"-") && arg.len() > 1 {
-            for &byte in &arg[1..] {
-                match byte {
-                    b'b' => options.number_nonblank = true,
-                    b'e' => {
-                        options.show_ends = true;
-                        options.show_nonprinting = true;
-                    }
-                    b'n' => options.number = true,
-                    b's' => options.squeeze_blank = true,
-                    b't' => {
-                        options.show_tabs = true;
-                        options.show_nonprinting = true;
-                    }
-                    b'v' => options.show_nonprinting = true,
-                    _ => {
-                        eprintln!("cat: invalid option -- '{}'", byte as char);
-                        usage!();
-                    }
-                }
-            }
-        } else {
-            files.push(OsStr::from_bytes(arg));
-        }
+    argument! {
+        args,
+        flags: {
+            b => options.number_nonblank = true,
+            e => {
+                options.show_ends = true;
+                options.show_nonprinting = true;
+            },
+            n => options.number = true,
+            s => options.squeeze_blank = true,
+            t => {
+                options.show_tabs = true;
+                options.show_nonprinting = true;
+            },
+            v => options.show_nonprinting = true,
+            h => usage!(help->$)
+        },
+        options: {},
+        command: |arg| files.push(OsStr::from_bytes(arg)),
+        on_invalid: |arg| usage!("cat: invalid option -- '{arg}'")
     }
+
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
 
     if files.is_empty() {
         let stdin = io::stdin();
         let reader = stdin.lock();
-        if let Err(err) = cat_file(reader, &options) {
+        if let Err(err) = cat_file(reader, &options, &mut stdout) {
             error!("cat: <stdin>: {}", err);
         }
     } else {
@@ -113,7 +114,7 @@ fn entry() -> ! {
                 Err(err) => error!("cat: {}: {}", path.display(), err),
             };
             let reader = BufReader::new(file);
-            if let Err(err) = cat_file(reader, &options) {
+            if let Err(err) = cat_file(reader, &options, &mut stdout) {
                 error!("cat: {}: {}", path.display(), err);
             }
         }
