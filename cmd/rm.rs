@@ -36,27 +36,29 @@ fn entry() -> ! {
         usage!();
     }
 
-    while let Some(arg) = args.next() {
-        match arg {
-            b"-r" | b"-R" => options.recursive = true,
-            b"-f" => options.force = true,
-            b"-rf" | b"-fR" | b"-Rf" | b"-fr" => {
-                options.recursive = true;
-                options.force = true;
-            }
-            _ => files.push(OsStr::from_bytes(arg)),
-        }
+    argument! {
+        args,
+        flags: {
+            r => options.recursive = true,
+            R => options.recursive = true,
+            f => options.force = true,
+            h => usage!(help->$)
+        },
+        options: {},
+        command: |arg| files.push(OsStr::from_bytes(arg)),
+        on_invalid: |arg| usage!("rm: invalid option -- '{arg}'")
     }
-
+    
     if files.is_empty() {
         error!("rm: missing operand");
     }
+
 
     for file in files {
         let path = Path::new(file);
         if let Err(err) = remove_file(path, &options) {
             if !options.force {
-                error!("{}", err);
+                error!("{err}");
             }
         }
     }
